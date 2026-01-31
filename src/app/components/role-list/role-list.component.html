@@ -1,0 +1,27 @@
+<section class="role-list" aria-label="Role list">
+  <h2>Available Roles</h2>
+  <ul class="role-list-items">
+    @for (role of roles(); track role.id) {
+      <li
+        class="role-item"
+        [class.selected]="isSelected(role)"
+        (click)="onRoleClick(role)"
+        (keydown.enter)="onRoleClick(role)"
+        (keydown.space)="onRoleClick(role)"
+        tabindex="0"
+        role="button"
+        [attr.aria-pressed]="isSelected(role)"
+      >
+        <div class="role-item-header">
+          <strong class="role-name">{{ role.name }}</strong>
+          <span class="role-type-badge" [class.built-in]="role.type === 'BuiltInRole'">
+            {{ role.type === 'BuiltInRole' ? 'Built-in' : 'Custom' }}
+          </span>
+        </div>
+        <p class="role-description">{{ role.description }}</p>
+      </li>
+    } @empty {
+      <li class="empty-state">No roles available</li>
+    }
+  </ul>
+</section>

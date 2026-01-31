@@ -3,11 +3,11 @@ import { RouterOutlet } from '@angular/router';
 import { RoleService, AppStateService } from './services';
 import type { TabId } from './services';
 import type { RoleDefinition } from './models';
-import { RoleDetailsComponent } from './components';
+import { RoleDetailsComponent, RoleListComponent } from './components';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RoleDetailsComponent],
+  imports: [RouterOutlet, RoleDetailsComponent, RoleListComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

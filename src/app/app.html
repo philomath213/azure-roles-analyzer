@@ -28,36 +28,26 @@
       </div>
     </section>
 
-    <section class="role-list" aria-label="Role list">
-      <h2>Available Roles</h2>
-      <ul>
-        @for (role of roles(); track role.id) {
-          <li
-            class="role-item"
-            [class.selected]="selectedRole()?.id === role.id"
-            (click)="onRoleSelect(role)"
-            (keydown.enter)="onRoleSelect(role)"
-            (keydown.space)="onRoleSelect(role)"
-            tabindex="0"
-            role="button"
-            [attr.aria-pressed]="selectedRole()?.id === role.id"
-          >
-            <strong>{{ role.name }}</strong>
-            <span class="role-type">{{ role.type }}</span>
-            <p class="role-description">{{ role.description }}</p>
-          </li>
-        }
-      </ul>
-    </section>
+    <div class="main-content" [class.has-details]="hasSelectedRole()">
+      <div class="list-panel">
+        <app-role-list
+          [roles]="roles()"
+          [selectedRoleId]="selectedRole()?.id ?? null"
+          (roleSelect)="onRoleSelect($event)"
+        />
+      </div>
 
-    @if (hasSelectedRole()) {
-      <app-role-details
-        [role]="selectedRole()!"
-        [activeTab]="activeTab()"
-        (tabChange)="onTabChange($event)"
-        (closeDetails)="onCloseDetails()"
-      />
-    }
+      @if (hasSelectedRole()) {
+        <div class="details-panel">
+          <app-role-details
+            [role]="selectedRole()!"
+            [activeTab]="activeTab()"
+            (tabChange)="onTabChange($event)"
+            (closeDetails)="onCloseDetails()"
+          />
+        </div>
+      }
+    </div>
   }
 
   <router-outlet />

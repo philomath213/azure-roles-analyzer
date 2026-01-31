@@ -217,4 +217,63 @@ describe('App', () => {
       expect(item.getAttribute('tabindex')).toBe('0');
     });
   });
+
+  it('should display app-role-list component after loading', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-role-list')).toBeTruthy();
+  });
+
+  it('should have two-panel layout when role is selected', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const firstRole = compiled.querySelector('.role-item') as HTMLElement;
+    firstRole.click();
+    fixture.detectChanges();
+
+    const mainContent = compiled.querySelector('.main-content');
+    expect(mainContent?.classList.contains('has-details')).toBe(true);
+    expect(compiled.querySelector('.list-panel')).toBeTruthy();
+    expect(compiled.querySelector('.details-panel')).toBeTruthy();
+  });
+
+  it('should remove has-details class when role is deselected', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const firstRole = compiled.querySelector('.role-item') as HTMLElement;
+    firstRole.click();
+    fixture.detectChanges();
+
+    const closeButton = compiled.querySelector('.close-button') as HTMLElement;
+    closeButton.click();
+    fixture.detectChanges();
+
+    const mainContent = compiled.querySelector('.main-content');
+    expect(mainContent?.classList.contains('has-details')).toBe(false);
+    expect(compiled.querySelector('.details-panel')).toBeFalsy();
+  });
 });
