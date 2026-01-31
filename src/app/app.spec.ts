@@ -2,10 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { App } from './app';
-import { RoleDefinition } from './models';
+import { AppStateService } from './services';
+import type { RoleDefinition } from './models';
 
 describe('App', () => {
   let httpMock: HttpTestingController;
+  let appState: AppStateService;
 
   const mockRoles: RoleDefinition[] = [
     {
@@ -47,10 +49,12 @@ describe('App', () => {
     }).compileComponents();
 
     httpMock = TestBed.inject(HttpTestingController);
+    appState = TestBed.inject(AppStateService);
   });
 
   afterEach(() => {
     httpMock.verify();
+    appState.clearSelection();
   });
 
   it('should create the app', () => {
@@ -115,7 +119,102 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    const roleItems = compiled.querySelectorAll('.role-list li');
+    const roleItems = compiled.querySelectorAll('.role-item');
     expect(roleItems.length).toBe(2);
+  });
+
+  it('should select a role when clicked', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const firstRole = compiled.querySelector('.role-item') as HTMLElement;
+    firstRole.click();
+    fixture.detectChanges();
+
+    expect(appState.selectedRole()).toEqual(mockRoles[0]);
+  });
+
+  it('should display role details when a role is selected', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const firstRole = compiled.querySelector('.role-item') as HTMLElement;
+    firstRole.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelector('app-role-details')).toBeTruthy();
+  });
+
+  it('should hide role details when closed', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const firstRole = compiled.querySelector('.role-item') as HTMLElement;
+    firstRole.click();
+    fixture.detectChanges();
+
+    const closeButton = compiled.querySelector('.close-button') as HTMLElement;
+    closeButton.click();
+    fixture.detectChanges();
+
+    expect(compiled.querySelector('app-role-details')).toBeFalsy();
+  });
+
+  it('should mark selected role as selected in the list', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const firstRole = compiled.querySelector('.role-item') as HTMLElement;
+    firstRole.click();
+    fixture.detectChanges();
+
+    expect(firstRole.classList.contains('selected')).toBe(true);
+  });
+
+  it('should have accessible role items', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const roleItems = compiled.querySelectorAll('.role-item');
+
+    roleItems.forEach((item) => {
+      expect(item.getAttribute('role')).toBe('button');
+      expect(item.getAttribute('tabindex')).toBe('0');
+    });
   });
 });

@@ -82,16 +82,30 @@
   margin: 0;
 }
 
-.role-list li {
+.role-item {
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
-.role-list li:hover {
+.role-item:hover {
   border-color: #0078d4;
+  background-color: rgba(0, 120, 212, 0.02);
+}
+
+.role-item:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: 2px;
+}
+
+.role-item.selected {
+  border-color: #0078d4;
+  background-color: rgba(0, 120, 212, 0.05);
+  box-shadow: 0 0 0 1px #0078d4;
 }
 
 .role-list strong {

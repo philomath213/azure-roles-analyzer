@@ -32,7 +32,16 @@
       <h2>Available Roles</h2>
       <ul>
         @for (role of roles(); track role.id) {
-          <li>
+          <li
+            class="role-item"
+            [class.selected]="selectedRole()?.id === role.id"
+            (click)="onRoleSelect(role)"
+            (keydown.enter)="onRoleSelect(role)"
+            (keydown.space)="onRoleSelect(role)"
+            tabindex="0"
+            role="button"
+            [attr.aria-pressed]="selectedRole()?.id === role.id"
+          >
             <strong>{{ role.name }}</strong>
             <span class="role-type">{{ role.type }}</span>
             <p class="role-description">{{ role.description }}</p>
@@ -40,6 +49,15 @@
         }
       </ul>
     </section>
+
+    @if (hasSelectedRole()) {
+      <app-role-details
+        [role]="selectedRole()!"
+        [activeTab]="activeTab()"
+        (tabChange)="onTabChange($event)"
+        (closeDetails)="onCloseDetails()"
+      />
+    }
   }
 
   <router-outlet />

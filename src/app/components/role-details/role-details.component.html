@@ -1,0 +1,266 @@
+<section class="role-details" aria-label="Role details">
+  <header class="role-details-header">
+    <div class="role-title-section">
+      <h2>{{ role().name }}</h2>
+      <span class="role-type-badge" [class.built-in]="role().type === 'BuiltInRole'">
+        {{ role().type === 'BuiltInRole' ? 'Built-in' : 'Custom' }}
+      </span>
+    </div>
+    <button
+      type="button"
+      class="close-button"
+      (click)="onClose()"
+      aria-label="Close role details"
+    >
+      &times;
+    </button>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Role information tabs">
+    @for (tab of tabs; track tab.id) {
+      <button
+        type="button"
+        role="tab"
+        class="tab-button"
+        [class.active]="activeTab() === tab.id"
+        [attr.aria-selected]="activeTab() === tab.id"
+        [attr.aria-controls]="'panel-' + tab.id"
+        [id]="'tab-' + tab.id"
+        (click)="onTabClick(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <div class="tab-content">
+    @switch (activeTab()) {
+      @case ('overview') {
+        <div
+          role="tabpanel"
+          id="panel-overview"
+          aria-labelledby="tab-overview"
+          class="tab-panel"
+        >
+          <div class="overview-section">
+            <h3>Description</h3>
+            <p class="description">{{ role().description }}</p>
+          </div>
+
+          <div class="overview-section">
+            <h3>Role ID</h3>
+            <code class="role-id">{{ role().id }}</code>
+          </div>
+
+          <div class="overview-section">
+            <h3>Assignable Scopes</h3>
+            @if (role().assignableScopes.length > 0) {
+              <ul class="scopes-list">
+                @for (scope of role().assignableScopes; track scope) {
+                  <li><code>{{ scope }}</code></li>
+                }
+              </ul>
+            } @else {
+              <p class="empty-state">No assignable scopes defined</p>
+            }
+          </div>
+
+          <div class="overview-section">
+            <h3>Permission Summary</h3>
+            <div class="permission-summary">
+              <div class="summary-item">
+                <span class="summary-label">Control Plane Actions:</span>
+                <span class="summary-value">{{ controlPlaneActions().length }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Control Plane NotActions:</span>
+                <span class="summary-value">{{ controlPlaneNotActions().length }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Data Plane Actions:</span>
+                <span class="summary-value">{{ dataPlaneActions().length }}</span>
+              </div>
+              <div class="summary-item">
+                <span class="summary-label">Data Plane NotActions:</span>
+                <span class="summary-value">{{ dataPlaneNotActions().length }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      @case ('control-plane') {
+        <div
+          role="tabpanel"
+          id="panel-control-plane"
+          aria-labelledby="tab-control-plane"
+          class="tab-panel"
+        >
+          @if (hasControlPlanePermissions()) {
+            <div class="permission-section">
+              <h3>Actions (Allowed)</h3>
+              @if (controlPlaneActions().length > 0) {
+                <ul class="permission-list allowed">
+                  @for (action of controlPlaneActions(); track action) {
+                    <li>
+                      <code>{{ action }}</code>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty-state">No actions defined</p>
+              }
+            </div>
+
+            <div class="permission-section">
+              <h3>NotActions (Denied)</h3>
+              @if (controlPlaneNotActions().length > 0) {
+                <ul class="permission-list denied">
+                  @for (notAction of controlPlaneNotActions(); track notAction) {
+                    <li>
+                      <code>{{ notAction }}</code>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty-state">No NotActions defined</p>
+              }
+            </div>
+          } @else {
+            <p class="empty-state">No control plane permissions defined for this role</p>
+          }
+        </div>
+      }
+
+      @case ('data-plane') {
+        <div
+          role="tabpanel"
+          id="panel-data-plane"
+          aria-labelledby="tab-data-plane"
+          class="tab-panel"
+        >
+          @if (hasDataPlanePermissions()) {
+            <div class="permission-section">
+              <h3>DataActions (Allowed)</h3>
+              @if (dataPlaneActions().length > 0) {
+                <ul class="permission-list allowed">
+                  @for (action of dataPlaneActions(); track action) {
+                    <li>
+                      <code>{{ action }}</code>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty-state">No data actions defined</p>
+              }
+            </div>
+
+            <div class="permission-section">
+              <h3>NotDataActions (Denied)</h3>
+              @if (dataPlaneNotActions().length > 0) {
+                <ul class="permission-list denied">
+                  @for (notAction of dataPlaneNotActions(); track notAction) {
+                    <li>
+                      <code>{{ notAction }}</code>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty-state">No NotDataActions defined</p>
+              }
+            </div>
+          } @else {
+            <p class="empty-state">No data plane permissions defined for this role</p>
+          }
+        </div>
+      }
+
+      @case ('effective-permissions') {
+        <div
+          role="tabpanel"
+          id="panel-effective-permissions"
+          aria-labelledby="tab-effective-permissions"
+          class="tab-panel"
+        >
+          <div class="effective-section">
+            <h3>Control Plane Effective Permissions</h3>
+            @if (effectivePermissions().controlPlane.hasWildcard) {
+              <p class="wildcard-notice">
+                This role has wildcard (*) access to control plane operations
+              </p>
+            }
+
+            <div class="effective-subsection">
+              <h4>Allowed Patterns</h4>
+              @if (effectivePermissions().controlPlane.allowed.length > 0) {
+                <ul class="permission-list allowed">
+                  @for (perm of effectivePermissions().controlPlane.allowed; track perm) {
+                    <li>
+                      <code>{{ perm }}</code>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty-state">No allowed permissions</p>
+              }
+            </div>
+
+            <div class="effective-subsection">
+              <h4>Denied Patterns</h4>
+              @if (effectivePermissions().controlPlane.denied.length > 0) {
+                <ul class="permission-list denied">
+                  @for (perm of effectivePermissions().controlPlane.denied; track perm) {
+                    <li>
+                      <code>{{ perm }}</code>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty-state">No denied permissions</p>
+              }
+            </div>
+          </div>
+
+          <div class="effective-section">
+            <h3>Data Plane Effective Permissions</h3>
+            @if (effectivePermissions().dataPlane.hasWildcard) {
+              <p class="wildcard-notice">
+                This role has wildcard (*) access to data plane operations
+              </p>
+            }
+
+            <div class="effective-subsection">
+              <h4>Allowed Patterns</h4>
+              @if (effectivePermissions().dataPlane.allowed.length > 0) {
+                <ul class="permission-list allowed">
+                  @for (perm of effectivePermissions().dataPlane.allowed; track perm) {
+                    <li>
+                      <code>{{ perm }}</code>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty-state">No allowed permissions</p>
+              }
+            </div>
+
+            <div class="effective-subsection">
+              <h4>Denied Patterns</h4>
+              @if (effectivePermissions().dataPlane.denied.length > 0) {
+                <ul class="permission-list denied">
+                  @for (perm of effectivePermissions().dataPlane.denied; track perm) {
+                    <li>
+                      <code>{{ perm }}</code>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty-state">No denied permissions</p>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</section>
