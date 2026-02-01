@@ -4,3 +4,4 @@ export type { PermissionPlane, MergedPermissions } from './permission-engine.ser
 export { AppStateService } from './app-state.service';
 export type { TabId } from './app-state.service';
 export { SearchService } from './search.service';
+export { HierarchyBuilderService } from './hierarchy-builder.service';
