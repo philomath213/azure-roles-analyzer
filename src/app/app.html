@@ -30,8 +30,14 @@
 
     <div class="main-content" [class.has-details]="hasSelectedRole()">
       <div class="list-panel">
+        <app-role-search />
+        @if (hasSearchQuery()) {
+          <div class="search-results-count" aria-live="polite">
+            <span>{{ filteredRoles().length }} of {{ roleCount() }} roles</span>
+          </div>
+        }
         <app-role-list
-          [roles]="roles()"
+          [roles]="filteredRoles()"
           [selectedRoleId]="selectedRole()?.id ?? null"
           (roleSelect)="onRoleSelect($event)"
         />

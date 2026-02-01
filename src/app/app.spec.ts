@@ -2,12 +2,13 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { App } from './app';
-import { AppStateService } from './services';
+import { AppStateService, SearchService } from './services';
 import type { RoleDefinition } from './models';
 
 describe('App', () => {
   let httpMock: HttpTestingController;
   let appState: AppStateService;
+  let searchService: SearchService;
 
   const mockRoles: RoleDefinition[] = [
     {
@@ -50,11 +51,13 @@ describe('App', () => {
 
     httpMock = TestBed.inject(HttpTestingController);
     appState = TestBed.inject(AppStateService);
+    searchService = TestBed.inject(SearchService);
   });
 
   afterEach(() => {
     httpMock.verify();
     appState.clearSelection();
+    searchService.clearSearch();
   });
 
   it('should create the app', () => {
@@ -275,5 +278,92 @@ describe('App', () => {
     const mainContent = compiled.querySelector('.main-content');
     expect(mainContent?.classList.contains('has-details')).toBe(false);
     expect(compiled.querySelector('.details-panel')).toBeFalsy();
+  });
+
+  it('should display app-role-search component after loading', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-role-search')).toBeTruthy();
+  });
+
+  it('should filter roles when search query is set', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    searchService.setSearchQuery('owner');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const roleItems = compiled.querySelectorAll('.role-item');
+    expect(roleItems.length).toBe(1);
+  });
+
+  it('should show search results count when searching', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    searchService.setSearchQuery('owner');
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const resultsCount = compiled.querySelector('.search-results-count');
+    expect(resultsCount).toBeTruthy();
+    expect(resultsCount?.textContent).toContain('1 of 2 roles');
+  });
+
+  it('should not show search results count when not searching', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const resultsCount = compiled.querySelector('.search-results-count');
+    expect(resultsCount).toBeFalsy();
+  });
+
+  it('should show all roles when search is cleared', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('/assets/data/roles-data.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    searchService.setSearchQuery('owner');
+    fixture.detectChanges();
+
+    searchService.clearSearch();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const roleItems = compiled.querySelectorAll('.role-item');
+    expect(roleItems.length).toBe(2);
   });
 });

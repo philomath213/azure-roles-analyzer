@@ -97,6 +97,13 @@
   overflow: hidden;
 }
 
+.search-results-count {
+  font-size: 0.875rem;
+  color: #666;
+  padding: 0.5rem 0;
+  flex-shrink: 0;
+}
+
 .details-panel {
   display: flex;
   flex-direction: column;
