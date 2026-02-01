@@ -1,13 +1,26 @@
-import { Component, ChangeDetectionStrategy, inject, OnInit, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, computed, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { RoleService, AppStateService, SearchService } from './services';
+import { RoleService, AppStateService, SearchService, HierarchyBuilderService } from './services';
 import type { TabId } from './services';
 import type { RoleDefinition } from './models';
-import { RoleDetailsComponent, RoleListComponent, RoleSearchComponent } from './components';
+import {
+  HierarchyTreeComponent,
+  RoleDetailsComponent,
+  RoleListComponent,
+  RoleSearchComponent,
+} from './components';
+
+export type ViewMode = 'list' | 'tree';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RoleDetailsComponent, RoleListComponent, RoleSearchComponent],
+  imports: [
+    RouterOutlet,
+    HierarchyTreeComponent,
+    RoleDetailsComponent,
+    RoleListComponent,
+    RoleSearchComponent,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,6 +29,7 @@ export class App implements OnInit {
   private readonly roleService = inject(RoleService);
   private readonly appState = inject(AppStateService);
   private readonly searchService = inject(SearchService);
+  private readonly hierarchyBuilder = inject(HierarchyBuilderService);
 
   protected readonly roles = this.roleService.roles;
   protected readonly roleCount = this.roleService.roleCount;
@@ -34,6 +48,14 @@ export class App implements OnInit {
 
   protected readonly hasSearchQuery = this.searchService.hasSearchQuery;
 
+  /** Current view mode */
+  protected readonly viewMode = signal<ViewMode>('list');
+
+  /** Role hierarchy computed from roles */
+  protected readonly hierarchy = computed(() => {
+    return this.hierarchyBuilder.buildHierarchy(this.roles());
+  });
+
   ngOnInit(): void {
     this.roleService.loadRoles();
   }
@@ -48,5 +70,9 @@ export class App implements OnInit {
 
   onCloseDetails(): void {
     this.appState.clearSelection();
+  }
+
+  setViewMode(mode: ViewMode): void {
+    this.viewMode.set(mode);
   }
 }

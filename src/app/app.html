@@ -30,17 +30,49 @@
 
     <div class="main-content" [class.has-details]="hasSelectedRole()">
       <div class="list-panel">
-        <app-role-search />
-        @if (hasSearchQuery()) {
+        <div class="view-controls">
+          <div class="view-toggle" role="tablist" aria-label="View mode">
+            <button
+              type="button"
+              role="tab"
+              [class.active]="viewMode() === 'list'"
+              [attr.aria-selected]="viewMode() === 'list'"
+              (click)="setViewMode('list')"
+            >
+              List
+            </button>
+            <button
+              type="button"
+              role="tab"
+              [class.active]="viewMode() === 'tree'"
+              [attr.aria-selected]="viewMode() === 'tree'"
+              (click)="setViewMode('tree')"
+            >
+              Hierarchy
+            </button>
+          </div>
+          @if (viewMode() === 'list') {
+            <app-role-search />
+          }
+        </div>
+        @if (viewMode() === 'list' && hasSearchQuery()) {
           <div class="search-results-count" aria-live="polite">
             <span>{{ filteredRoles().length }} of {{ roleCount() }} roles</span>
           </div>
         }
-        <app-role-list
-          [roles]="filteredRoles()"
-          [selectedRoleId]="selectedRole()?.id ?? null"
-          (roleSelect)="onRoleSelect($event)"
-        />
+        @if (viewMode() === 'list') {
+          <app-role-list
+            [roles]="filteredRoles()"
+            [selectedRoleId]="selectedRole()?.id ?? null"
+            (roleSelect)="onRoleSelect($event)"
+          />
+        } @else {
+          <app-hierarchy-tree
+            [roots]="hierarchy().roots"
+            [selectedRoleId]="selectedRole()?.id ?? null"
+            (roleSelect)="onRoleSelect($event)"
+          />
+        }
       </div>
 
       @if (hasSelectedRole()) {
