@@ -24,19 +24,15 @@ describe('HierarchyTreeComponent', () => {
     role: RoleDefinition,
     children: HierarchyNode[] = [],
     depth = 0
-  ): HierarchyNode => ({
-    role,
-    children,
-    depth,
-  });
+  ): HierarchyNode => ({ role, children, depth });
 
   // Sample hierarchy:
-  // Owner (root)
-  //   ├── Contributor
-  //   │   └── Reader
-  //   └── Custom Role
-  // Storage Blob Contributor (root)
-  //   └── Storage Blob Reader
+  // Owner (root, depth 0)
+  //   ├── Contributor (depth 1)
+  //   │   └── Reader (depth 2)
+  //   └── Custom Role (depth 1)
+  // Storage Blob Contributor (root, depth 0)
+  //   └── Storage Blob Reader (depth 1)
   const ownerRole = createRole('owner-id', 'Owner');
   const contributorRole = createRole('contributor-id', 'Contributor');
   const readerRole = createRole('reader-id', 'Reader');
@@ -48,7 +44,6 @@ describe('HierarchyTreeComponent', () => {
   const contributorNode = createNode(contributorRole, [readerNode], 1);
   const customNode = createNode(customRole, [], 1);
   const ownerNode = createNode(ownerRole, [contributorNode, customNode], 0);
-
   const blobReaderNode = createNode(blobReaderRole, [], 1);
   const blobContributorNode = createNode(blobContributorRole, [blobReaderNode], 0);
 
@@ -61,7 +56,6 @@ describe('HierarchyTreeComponent', () => {
 
     fixture = TestBed.createComponent(HierarchyTreeComponent);
     component = fixture.componentInstance;
-
     fixture.componentRef.setInput('roots', testRoots);
     fixture.detectChanges();
   });
@@ -73,34 +67,33 @@ describe('HierarchyTreeComponent', () => {
 
     it('should display tree header', () => {
       const compiled = fixture.nativeElement as HTMLElement;
-      const header = compiled.querySelector('h2');
-      expect(header?.textContent).toBe('Role Hierarchy');
+      expect(compiled.querySelector('h2')?.textContent).toBe('Role Hierarchy');
     });
 
     it('should display total role count', () => {
       const compiled = fixture.nativeElement as HTMLElement;
-      const info = compiled.querySelector('.tree-info');
-      expect(info?.textContent).toContain('6 roles');
+      expect(compiled.querySelector('.tree-info')?.textContent).toContain('6 roles');
     });
 
     it('should render tree container', () => {
       const compiled = fixture.nativeElement as HTMLElement;
-      const tree = compiled.querySelector('[ngTree]');
-      expect(tree).toBeTruthy();
+      expect(compiled.querySelector('[role="tree"]')).toBeTruthy();
     });
 
-    it('should render tree items', () => {
+    it('should render only root nodes initially (collapsed by default)', () => {
       const compiled = fixture.nativeElement as HTMLElement;
-      const allItems = compiled.querySelectorAll('[ngTreeItem]');
-      expect(allItems.length).toBeGreaterThan(0);
+      const items = compiled.querySelectorAll('[role="treeitem"]');
+      // Only Owner and Storage Blob Data Contributor are visible initially
+      expect(items.length).toBe(2);
     });
 
-    it('should display role names', () => {
+    it('should display root node names', () => {
       const compiled = fixture.nativeElement as HTMLElement;
-      const names = compiled.querySelectorAll('.node-name');
-      const nameTexts = Array.from(names).map((n) => n.textContent);
-      expect(nameTexts).toContain('Owner');
-      expect(nameTexts).toContain('Contributor');
+      const names = Array.from(compiled.querySelectorAll('.node-name')).map(
+        (n) => n.textContent?.trim()
+      );
+      expect(names).toContain('Owner');
+      expect(names).toContain('Storage Blob Data Contributor');
     });
 
     it('should display role type badges', () => {
@@ -117,35 +110,122 @@ describe('HierarchyTreeComponent', () => {
     });
   });
 
+  describe('expand / collapse', () => {
+    it('should expand a node and show its direct children when clicked', () => {
+      component.onNodeClick(ownerNode);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const names = Array.from(compiled.querySelectorAll('.node-name')).map(
+        (n) => n.textContent?.trim()
+      );
+      expect(names).toContain('Contributor');
+      expect(names).toContain('Custom Role');
+    });
+
+    it('should not render grandchildren until intermediate node is also expanded', () => {
+      component.onNodeClick(ownerNode);
+      fixture.detectChanges();
+
+      // Reader is a grandchild — only visible after Contributor is also expanded
+      const getNames = () =>
+        Array.from(fixture.nativeElement.querySelectorAll('.node-name')).map((n) =>
+          (n as Element).textContent?.trim()
+        );
+
+      expect(getNames()).not.toContain('Reader');
+
+      component.onNodeClick(contributorNode);
+      fixture.detectChanges();
+
+      const names = getNames();
+      expect(names).toContain('Reader');
+    });
+
+    it('should collapse an expanded node and remove its children from the DOM', () => {
+      component.onNodeClick(ownerNode); // expand
+      fixture.detectChanges();
+      component.onNodeClick(ownerNode); // collapse
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const names = Array.from(compiled.querySelectorAll('.node-name')).map(
+        (n) => n.textContent?.trim()
+      );
+      expect(names).not.toContain('Contributor');
+      expect(names).not.toContain('Custom Role');
+    });
+
+    it('should set aria-expanded="true" when a node is expanded', () => {
+      component.onNodeClick(ownerNode);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const ownerItem = Array.from(compiled.querySelectorAll('[role="treeitem"]')).find((el) =>
+        el.querySelector('.node-name')?.textContent?.includes('Owner')
+      );
+      expect(ownerItem?.getAttribute('aria-expanded')).toBe('true');
+    });
+
+    it('should set aria-expanded="false" after collapsing a node', () => {
+      component.onNodeClick(ownerNode); // expand
+      fixture.detectChanges();
+      component.onNodeClick(ownerNode); // collapse
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const ownerItem = Array.from(compiled.querySelectorAll('[role="treeitem"]')).find((el) =>
+        el.querySelector('.node-name')?.textContent?.includes('Owner')
+      );
+      expect(ownerItem?.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('should not set aria-expanded on leaf nodes', () => {
+      // Expand Owner so Custom Role (a leaf) is visible
+      component.onNodeClick(ownerNode);
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const customItem = Array.from(compiled.querySelectorAll('[role="treeitem"]')).find((el) =>
+        el.querySelector('.node-name')?.textContent?.includes('Custom Role')
+      );
+      expect(customItem?.hasAttribute('aria-expanded')).toBe(false);
+    });
+  });
+
   describe('selection', () => {
-    it('should emit roleSelect when selection changes', () => {
+    it('should emit roleSelect when a node is clicked', () => {
       const spy = vi.spyOn(component.roleSelect, 'emit');
-
-      component.onSelectionChange(['owner-id']);
-
+      component.onNodeClick(ownerNode);
       expect(spy).toHaveBeenCalledWith(ownerRole);
     });
 
-    it('should not emit when selection is empty', () => {
+    it('should emit roleSelect for a leaf node', () => {
       const spy = vi.spyOn(component.roleSelect, 'emit');
-
-      component.onSelectionChange([]);
-
-      expect(spy).not.toHaveBeenCalled();
+      component.onNodeClick(customNode);
+      expect(spy).toHaveBeenCalledWith(customRole);
     });
 
-    it('should update selectedValues signal', () => {
-      component.onSelectionChange(['contributor-id']);
-
-      expect(component.selectedValues()).toEqual(['contributor-id']);
+    it('should set selectedId when a node is clicked', () => {
+      component.onNodeClick(ownerNode);
+      expect(component.selectedId()).toBe('owner-id');
     });
 
-    it('should find nested role by ID', () => {
-      const spy = vi.spyOn(component.roleSelect, 'emit');
+    it('should update selectedId when a different node is clicked', () => {
+      component.onNodeClick(ownerNode);
+      component.onNodeClick(blobContributorNode);
+      expect(component.selectedId()).toBe('blob-contributor-id');
+    });
 
-      component.onSelectionChange(['reader-id']);
+    it('should set aria-selected="true" on the selected node', () => {
+      component.onNodeClick(ownerNode);
+      fixture.detectChanges();
 
-      expect(spy).toHaveBeenCalledWith(readerRole);
+      const compiled = fixture.nativeElement as HTMLElement;
+      const ownerItem = Array.from(compiled.querySelectorAll('[role="treeitem"]')).find((el) =>
+        el.querySelector('.node-name')?.textContent?.includes('Owner')
+      );
+      expect(ownerItem?.getAttribute('aria-selected')).toBe('true');
     });
   });
 
@@ -157,14 +237,12 @@ describe('HierarchyTreeComponent', () => {
     it('should return 0 for empty roots', () => {
       fixture.componentRef.setInput('roots', []);
       fixture.detectChanges();
-
       expect(component.totalCount()).toBe(0);
     });
 
     it('should count single root correctly', () => {
       fixture.componentRef.setInput('roots', [ownerNode]);
       fixture.detectChanges();
-
       // Owner + Contributor + Reader + Custom Role = 4
       expect(component.totalCount()).toBe(4);
     });
@@ -173,20 +251,54 @@ describe('HierarchyTreeComponent', () => {
   describe('accessibility', () => {
     it('should have tree role on container', () => {
       const compiled = fixture.nativeElement as HTMLElement;
-      const tree = compiled.querySelector('[role="tree"]');
-      expect(tree).toBeTruthy();
+      expect(compiled.querySelector('[role="tree"]')).toBeTruthy();
     });
 
-    it('should have treeitem role on nodes', () => {
+    it('should have treeitem role on root nodes', () => {
       const compiled = fixture.nativeElement as HTMLElement;
       const items = compiled.querySelectorAll('[role="treeitem"]');
       expect(items.length).toBeGreaterThan(0);
     });
 
-    it('should have group role on nested lists', () => {
+    it('should have group role on expanded node children', () => {
+      // Groups only appear after a node is expanded
+      component.onNodeClick(ownerNode);
+      fixture.detectChanges();
+
       const compiled = fixture.nativeElement as HTMLElement;
       const groups = compiled.querySelectorAll('[role="group"]');
       expect(groups.length).toBeGreaterThan(0);
+    });
+
+    it('should have tabindex=0 on tree items', () => {
+      const compiled = fixture.nativeElement as HTMLElement;
+      const items = compiled.querySelectorAll('[role="treeitem"]');
+      items.forEach((item) => {
+        expect(item.getAttribute('tabindex')).toBe('0');
+      });
+    });
+
+    it('should select and expand node on Enter key', () => {
+      const spy = vi.spyOn(component.roleSelect, 'emit');
+      const compiled = fixture.nativeElement as HTMLElement;
+      const ownerItem = compiled.querySelectorAll('[role="treeitem"]')[0] as HTMLElement;
+
+      ownerItem.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      fixture.detectChanges();
+
+      expect(spy).toHaveBeenCalledWith(ownerRole);
+      expect(component.selectedId()).toBe('owner-id');
+    });
+
+    it('should select and expand node on Space key', () => {
+      const spy = vi.spyOn(component.roleSelect, 'emit');
+      const compiled = fixture.nativeElement as HTMLElement;
+      const ownerItem = compiled.querySelectorAll('[role="treeitem"]')[0] as HTMLElement;
+
+      ownerItem.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+      fixture.detectChanges();
+
+      expect(spy).toHaveBeenCalledWith(ownerRole);
     });
   });
 
@@ -196,8 +308,9 @@ describe('HierarchyTreeComponent', () => {
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
-      const emptyState = compiled.querySelector('.empty-state');
-      expect(emptyState?.textContent).toContain('No roles in hierarchy');
+      expect(compiled.querySelector('.empty-state')?.textContent).toContain(
+        'No roles in hierarchy'
+      );
     });
 
     it('should not show tree container when empty', () => {
@@ -205,8 +318,7 @@ describe('HierarchyTreeComponent', () => {
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
-      const tree = compiled.querySelector('.tree-container');
-      expect(tree).toBeFalsy();
+      expect(compiled.querySelector('.tree-container')).toBeFalsy();
     });
   });
 });

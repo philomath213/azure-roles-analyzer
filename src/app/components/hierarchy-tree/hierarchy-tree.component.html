@@ -7,16 +7,10 @@
   </div>
 
   @if (roots().length > 0) {
-    <ul
-      ngTree
-      #tree="ngTree"
-      [values]="selectedValues()"
-      (valuesChange)="onSelectionChange($event)"
-      class="tree-container"
-    >
+    <ul role="tree" class="tree-container">
       <ng-template
         [ngTemplateOutlet]="treeNodes"
-        [ngTemplateOutletContext]="{ nodes: roots(), parent: tree }"
+        [ngTemplateOutletContext]="{ nodes: roots() }"
       />
     </ul>
   } @else {
@@ -24,22 +18,28 @@
   }
 </section>
 
-<ng-template #treeNodes let-nodes="nodes" let-parent="parent">
+<!--
+  Recursive template: each node is a <li role="treeitem">.
+  Children are inside a <ul role="group"> that is only created (@if) when the
+  parent is expanded — so collapsed subtrees have no DOM presence at all and
+  are completely invisible to change detection.
+-->
+<ng-template #treeNodes let-nodes="nodes">
   @for (node of nodes; track node.role.id) {
     <li
-      ngTreeItem
-      #treeItem="ngTreeItem"
-      [parent]="parent"
-      [value]="node.role.id"
-      [label]="node.role.name"
-      [expanded]="true"
+      role="treeitem"
+      [attr.aria-expanded]="node.children.length > 0 ? isExpanded(node.role.id) : null"
+      [attr.aria-selected]="selectedId() === node.role.id"
+      tabindex="0"
       class="tree-node"
+      (click)="onNodeClick(node)"
+      (keydown)="onNodeKeydown($event, node)"
     >
       <span class="node-content">
         @if (node.children.length > 0) {
-          <span class="expand-icon">▶</span>
+          <span class="expand-icon" aria-hidden="true">▶</span>
         } @else {
-          <span class="expand-placeholder"></span>
+          <span class="expand-placeholder" aria-hidden="true"></span>
         }
         <span class="node-name">{{ node.role.name }}</span>
         <span class="node-type" [class.built-in]="node.role.type === 'BuiltInRole'">
@@ -50,14 +50,12 @@
         }
       </span>
 
-      @if (node.children.length > 0) {
+      @if (node.children.length > 0 && isExpanded(node.role.id)) {
         <ul role="group">
-          <ng-template ngTreeItemGroup [ownedBy]="treeItem" #group="ngTreeItemGroup">
-            <ng-template
-              [ngTemplateOutlet]="treeNodes"
-              [ngTemplateOutletContext]="{ nodes: node.children, parent: group }"
-            />
-          </ng-template>
+          <ng-template
+            [ngTemplateOutlet]="treeNodes"
+            [ngTemplateOutletContext]="{ nodes: node.children }"
+          />
         </ul>
       }
     </li>

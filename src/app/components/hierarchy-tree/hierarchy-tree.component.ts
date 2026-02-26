@@ -7,7 +7,6 @@ import {
   signal,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { Tree, TreeItem, TreeItemGroup } from '@angular/aria/tree';
 import type { HierarchyNode, RoleDefinition } from '../../models';
 
 @Component({
@@ -15,55 +14,63 @@ import type { HierarchyNode, RoleDefinition } from '../../models';
   templateUrl: './hierarchy-tree.component.html',
   styleUrl: './hierarchy-tree.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, Tree, TreeItem, TreeItemGroup],
+  imports: [NgTemplateOutlet],
 })
 export class HierarchyTreeComponent {
-  /** Root nodes of the hierarchy */
   readonly roots = input.required<HierarchyNode[]>();
-
-  /** Currently selected role ID */
-  readonly selectedRoleId = input<string | null>(null);
-
-  /** Emitted when a role is selected */
   readonly roleSelect = output<RoleDefinition>();
 
-  /** Selected values for the tree (single selection) */
-  readonly selectedValues = signal<string[]>([]);
+  /**
+   * Set of role IDs whose children are currently visible.
+   * Children are rendered via @if — not hidden with CSS — so collapsed subtrees
+   * have zero DOM presence and are never touched by change detection.
+   */
+  private readonly expandedIds = signal(new Set<string>());
 
-  /** Total count of roles in the tree */
+  /** The currently selected role ID. */
+  readonly selectedId = signal<string | null>(null);
+
+  /** Total number of roles across the full hierarchy (not just visible). */
   readonly totalCount = computed(() => this.countNodes(this.roots()));
 
-  /** Count nodes recursively */
+  /** True when the given node is expanded. */
+  protected isExpanded(id: string): boolean {
+    return this.expandedIds().has(id);
+  }
+
+  /**
+   * Clicking a node:
+   * - toggles expansion when it has children
+   * - always selects the role and emits it to the parent
+   */
+  onNodeClick(node: HierarchyNode): void {
+    if (node.children.length > 0) {
+      this.expandedIds.update((prev) => {
+        const next = new Set(prev);
+        if (next.has(node.role.id)) {
+          next.delete(node.role.id);
+        } else {
+          next.add(node.role.id);
+        }
+        return next;
+      });
+    }
+    this.selectedId.set(node.role.id);
+    this.roleSelect.emit(node.role);
+  }
+
+  protected onNodeKeydown(event: KeyboardEvent, node: HierarchyNode): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.onNodeClick(node);
+    }
+  }
+
   private countNodes(nodes: HierarchyNode[]): number {
     let count = nodes.length;
     for (const node of nodes) {
       count += this.countNodes(node.children);
     }
     return count;
-  }
-
-  /** Handle selection change from tree */
-  onSelectionChange(values: string[]): void {
-    this.selectedValues.set(values);
-    if (values.length > 0) {
-      const role = this.findRoleById(this.roots(), values[0]);
-      if (role) {
-        this.roleSelect.emit(role);
-      }
-    }
-  }
-
-  /** Find a role by ID in the hierarchy */
-  private findRoleById(nodes: HierarchyNode[], id: string): RoleDefinition | null {
-    for (const node of nodes) {
-      if (node.role.id === id) {
-        return node.role;
-      }
-      const found = this.findRoleById(node.children, id);
-      if (found) {
-        return found;
-      }
-    }
-    return null;
   }
 }

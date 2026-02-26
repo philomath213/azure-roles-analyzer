@@ -69,7 +69,6 @@
         } @else {
           <app-hierarchy-tree
             [roots]="hierarchy().roots"
-            [selectedRoleId]="selectedRole()?.id ?? null"
             (roleSelect)="onRoleSelect($event)"
           />
         }
