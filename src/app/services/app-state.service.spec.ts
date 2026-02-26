@@ -100,10 +100,6 @@ describe('AppStateService', () => {
       expect(service.activeTab()).toBe('data-plane');
     });
 
-    it('should set the active tab to effective-permissions', () => {
-      service.setActiveTab('effective-permissions');
-      expect(service.activeTab()).toBe('effective-permissions');
-    });
   });
 
   describe('hasSelectedRole computed', () => {

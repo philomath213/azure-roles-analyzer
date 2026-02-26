@@ -6,7 +6,7 @@ import {
   inject,
   output,
 } from '@angular/core';
-import type { RoleDefinition, EffectivePermissions } from '../../models';
+import type { RoleDefinition } from '../../models';
 import { PermissionEngineService } from '../../services';
 import type { TabId } from '../../services';
 
@@ -34,13 +34,7 @@ export class RoleDetailsComponent {
     { id: 'overview', label: 'Overview' },
     { id: 'control-plane', label: 'Control Plane' },
     { id: 'data-plane', label: 'Data Plane' },
-    { id: 'effective-permissions', label: 'Effective Permissions' },
   ];
-
-  readonly effectivePermissions = computed<EffectivePermissions>(() => {
-    const currentRole = this.role();
-    return this.permissionEngine.computeEffectivePermissions(currentRole);
-  });
 
   readonly controlPlaneActions = computed(() => {
     const role = this.role();

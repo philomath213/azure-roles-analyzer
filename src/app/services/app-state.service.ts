@@ -1,7 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import type { RoleDefinition } from '../models';
 
-export type TabId = 'overview' | 'control-plane' | 'data-plane' | 'effective-permissions';
+export type TabId = 'overview' | 'control-plane' | 'data-plane';
 
 @Injectable({ providedIn: 'root' })
 export class AppStateService {

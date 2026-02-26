@@ -250,38 +250,6 @@
   border-radius: 4px;
 }
 
-.effective-section {
-  margin-bottom: 2rem;
-}
-
-.effective-section:last-child {
-  margin-bottom: 0;
-}
-
-.effective-section h3 {
-  margin: 0 0 1rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1a1a2e;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-.effective-subsection {
-  margin-bottom: 1rem;
-}
-
-.effective-subsection:last-child {
-  margin-bottom: 0;
-}
-
-.effective-subsection h4 {
-  margin: 0 0 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #6c757d;
-}
-
 .wildcard-notice {
   margin: 0 0 1rem;
   padding: 0.75rem;

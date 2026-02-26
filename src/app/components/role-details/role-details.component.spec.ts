@@ -158,6 +158,25 @@ describe('RoleDetailsComponent', () => {
       expect(compiled.textContent).toContain('*');
     });
 
+    it('should show wildcard notice for roles with * in actions', () => {
+      fixture.componentRef.setInput('role', ownerRole);
+      fixture.componentRef.setInput('activeTab', 'control-plane');
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.wildcard-notice')).toBeTruthy();
+      expect(compiled.querySelector('.wildcard-notice')?.textContent).toContain('wildcard');
+    });
+
+    it('should not show wildcard notice for roles without * in actions', () => {
+      fixture.componentRef.setInput('role', customRole);
+      fixture.componentRef.setInput('activeTab', 'control-plane');
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.wildcard-notice')).toBeFalsy();
+    });
+
     it('should display notActions for control plane', () => {
       fixture.componentRef.setInput('role', contributorRole);
       fixture.componentRef.setInput('activeTab', 'control-plane');
@@ -188,6 +207,25 @@ describe('RoleDetailsComponent', () => {
       expect(compiled.textContent).toContain('*');
     });
 
+    it('should show wildcard notice for roles with * in data actions', () => {
+      fixture.componentRef.setInput('role', ownerRole);
+      fixture.componentRef.setInput('activeTab', 'data-plane');
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.wildcard-notice')).toBeTruthy();
+      expect(compiled.querySelector('.wildcard-notice')?.textContent).toContain('wildcard');
+    });
+
+    it('should not show wildcard notice when no * in data actions', () => {
+      fixture.componentRef.setInput('role', customRole);
+      fixture.componentRef.setInput('activeTab', 'data-plane');
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.querySelector('.wildcard-notice')).toBeFalsy();
+    });
+
     it('should show empty state when no data plane permissions', () => {
       fixture.componentRef.setInput('role', contributorRole);
       fixture.componentRef.setInput('activeTab', 'data-plane');
@@ -198,36 +236,6 @@ describe('RoleDetailsComponent', () => {
     });
   });
 
-  describe('Effective Permissions tab', () => {
-    it('should display effective control plane permissions', () => {
-      fixture.componentRef.setInput('role', ownerRole);
-      fixture.componentRef.setInput('activeTab', 'effective-permissions');
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.textContent).toContain('Control Plane Effective Permissions');
-      expect(compiled.textContent).toContain('wildcard');
-    });
-
-    it('should display effective data plane permissions', () => {
-      fixture.componentRef.setInput('role', ownerRole);
-      fixture.componentRef.setInput('activeTab', 'effective-permissions');
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.textContent).toContain('Data Plane Effective Permissions');
-    });
-
-    it('should show denied patterns for contributor', () => {
-      fixture.componentRef.setInput('role', contributorRole);
-      fixture.componentRef.setInput('activeTab', 'effective-permissions');
-      fixture.detectChanges();
-
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.textContent).toContain('Microsoft.Authorization/*/Delete');
-    });
-  });
-
   describe('tabs', () => {
     beforeEach(() => {
       fixture.componentRef.setInput('role', ownerRole);
@@ -235,10 +243,10 @@ describe('RoleDetailsComponent', () => {
       fixture.detectChanges();
     });
 
-    it('should render all four tabs', () => {
+    it('should render all three tabs', () => {
       const compiled = fixture.nativeElement as HTMLElement;
       const tabs = compiled.querySelectorAll('.tab-button');
-      expect(tabs.length).toBe(4);
+      expect(tabs.length).toBe(3);
     });
 
     it('should mark active tab correctly', () => {
@@ -310,16 +318,6 @@ describe('RoleDetailsComponent', () => {
   });
 
   describe('computed properties', () => {
-    it('should compute effective permissions', () => {
-      fixture.componentRef.setInput('role', ownerRole);
-      fixture.detectChanges();
-
-      const effective = component.effectivePermissions();
-      expect(effective.roleId).toBe('owner-role-id');
-      expect(effective.controlPlane.hasWildcard).toBe(true);
-      expect(effective.dataPlane.hasWildcard).toBe(true);
-    });
-
     it('should compute control plane actions', () => {
       fixture.componentRef.setInput('role', customRole);
       fixture.detectChanges();

@@ -97,6 +97,11 @@
           class="tab-panel"
         >
           @if (hasControlPlanePermissions()) {
+            @if (controlPlaneActions().includes('*')) {
+              <p class="wildcard-notice">
+                This role has wildcard (*) access to all control plane operations
+              </p>
+            }
             <div class="permission-section">
               <h3>Actions (Allowed)</h3>
               @if (controlPlaneActions().length > 0) {
@@ -140,6 +145,11 @@
           class="tab-panel"
         >
           @if (hasDataPlanePermissions()) {
+            @if (dataPlaneActions().includes('*')) {
+              <p class="wildcard-notice">
+                This role has wildcard (*) access to all data plane operations
+              </p>
+            }
             <div class="permission-section">
               <h3>DataActions (Allowed)</h3>
               @if (dataPlaneActions().length > 0) {
@@ -175,92 +185,6 @@
         </div>
       }
 
-      @case ('effective-permissions') {
-        <div
-          role="tabpanel"
-          id="panel-effective-permissions"
-          aria-labelledby="tab-effective-permissions"
-          class="tab-panel"
-        >
-          <div class="effective-section">
-            <h3>Control Plane Effective Permissions</h3>
-            @if (effectivePermissions().controlPlane.hasWildcard) {
-              <p class="wildcard-notice">
-                This role has wildcard (*) access to control plane operations
-              </p>
-            }
-
-            <div class="effective-subsection">
-              <h4>Allowed Patterns</h4>
-              @if (effectivePermissions().controlPlane.allowed.length > 0) {
-                <ul class="permission-list allowed">
-                  @for (perm of effectivePermissions().controlPlane.allowed; track perm) {
-                    <li>
-                      <code>{{ perm }}</code>
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <p class="empty-state">No allowed permissions</p>
-              }
-            </div>
-
-            <div class="effective-subsection">
-              <h4>Denied Patterns</h4>
-              @if (effectivePermissions().controlPlane.denied.length > 0) {
-                <ul class="permission-list denied">
-                  @for (perm of effectivePermissions().controlPlane.denied; track perm) {
-                    <li>
-                      <code>{{ perm }}</code>
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <p class="empty-state">No denied permissions</p>
-              }
-            </div>
-          </div>
-
-          <div class="effective-section">
-            <h3>Data Plane Effective Permissions</h3>
-            @if (effectivePermissions().dataPlane.hasWildcard) {
-              <p class="wildcard-notice">
-                This role has wildcard (*) access to data plane operations
-              </p>
-            }
-
-            <div class="effective-subsection">
-              <h4>Allowed Patterns</h4>
-              @if (effectivePermissions().dataPlane.allowed.length > 0) {
-                <ul class="permission-list allowed">
-                  @for (perm of effectivePermissions().dataPlane.allowed; track perm) {
-                    <li>
-                      <code>{{ perm }}</code>
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <p class="empty-state">No allowed permissions</p>
-              }
-            </div>
-
-            <div class="effective-subsection">
-              <h4>Denied Patterns</h4>
-              @if (effectivePermissions().dataPlane.denied.length > 0) {
-                <ul class="permission-list denied">
-                  @for (perm of effectivePermissions().dataPlane.denied; track perm) {
-                    <li>
-                      <code>{{ perm }}</code>
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <p class="empty-state">No denied permissions</p>
-              }
-            </div>
-          </div>
-        </div>
-      }
     }
   </div>
 </section>
