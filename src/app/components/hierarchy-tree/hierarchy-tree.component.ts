@@ -43,7 +43,8 @@ export class HierarchyTreeComponent {
    * - toggles expansion when it has children
    * - always selects the role and emits it to the parent
    */
-  onNodeClick(node: HierarchyNode): void {
+  onNodeClick(event: MouseEvent | null, node: HierarchyNode): void {
+    event?.stopPropagation();
     if (node.children.length > 0) {
       this.expandedIds.update((prev) => {
         const next = new Set(prev);
@@ -62,7 +63,8 @@ export class HierarchyTreeComponent {
   protected onNodeKeydown(event: KeyboardEvent, node: HierarchyNode): void {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      this.onNodeClick(node);
+      event.stopPropagation();
+      this.onNodeClick(null, node);
     }
   }
 

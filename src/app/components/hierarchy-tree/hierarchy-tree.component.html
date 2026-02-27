@@ -32,7 +32,7 @@
       [attr.aria-selected]="selectedId() === node.role.id"
       tabindex="0"
       class="tree-node"
-      (click)="onNodeClick(node)"
+      (click)="onNodeClick($event, node)"
       (keydown)="onNodeKeydown($event, node)"
     >
       <span class="node-content">

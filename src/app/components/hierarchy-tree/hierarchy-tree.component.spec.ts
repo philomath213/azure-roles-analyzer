@@ -112,7 +112,7 @@ describe('HierarchyTreeComponent', () => {
 
   describe('expand / collapse', () => {
     it('should expand a node and show its direct children when clicked', () => {
-      component.onNodeClick(ownerNode);
+      component.onNodeClick(null,ownerNode);
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
@@ -124,7 +124,7 @@ describe('HierarchyTreeComponent', () => {
     });
 
     it('should not render grandchildren until intermediate node is also expanded', () => {
-      component.onNodeClick(ownerNode);
+      component.onNodeClick(null,ownerNode);
       fixture.detectChanges();
 
       // Reader is a grandchild — only visible after Contributor is also expanded
@@ -135,7 +135,7 @@ describe('HierarchyTreeComponent', () => {
 
       expect(getNames()).not.toContain('Reader');
 
-      component.onNodeClick(contributorNode);
+      component.onNodeClick(null,contributorNode);
       fixture.detectChanges();
 
       const names = getNames();
@@ -143,9 +143,9 @@ describe('HierarchyTreeComponent', () => {
     });
 
     it('should collapse an expanded node and remove its children from the DOM', () => {
-      component.onNodeClick(ownerNode); // expand
+      component.onNodeClick(null,ownerNode); // expand
       fixture.detectChanges();
-      component.onNodeClick(ownerNode); // collapse
+      component.onNodeClick(null,ownerNode); // collapse
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
@@ -157,7 +157,7 @@ describe('HierarchyTreeComponent', () => {
     });
 
     it('should set aria-expanded="true" when a node is expanded', () => {
-      component.onNodeClick(ownerNode);
+      component.onNodeClick(null,ownerNode);
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
@@ -168,9 +168,9 @@ describe('HierarchyTreeComponent', () => {
     });
 
     it('should set aria-expanded="false" after collapsing a node', () => {
-      component.onNodeClick(ownerNode); // expand
+      component.onNodeClick(null,ownerNode); // expand
       fixture.detectChanges();
-      component.onNodeClick(ownerNode); // collapse
+      component.onNodeClick(null,ownerNode); // collapse
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
@@ -182,7 +182,7 @@ describe('HierarchyTreeComponent', () => {
 
     it('should not set aria-expanded on leaf nodes', () => {
       // Expand Owner so Custom Role (a leaf) is visible
-      component.onNodeClick(ownerNode);
+      component.onNodeClick(null,ownerNode);
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
@@ -196,29 +196,29 @@ describe('HierarchyTreeComponent', () => {
   describe('selection', () => {
     it('should emit roleSelect when a node is clicked', () => {
       const spy = vi.spyOn(component.roleSelect, 'emit');
-      component.onNodeClick(ownerNode);
+      component.onNodeClick(null,ownerNode);
       expect(spy).toHaveBeenCalledWith(ownerRole);
     });
 
     it('should emit roleSelect for a leaf node', () => {
       const spy = vi.spyOn(component.roleSelect, 'emit');
-      component.onNodeClick(customNode);
+      component.onNodeClick(null,customNode);
       expect(spy).toHaveBeenCalledWith(customRole);
     });
 
     it('should set selectedId when a node is clicked', () => {
-      component.onNodeClick(ownerNode);
+      component.onNodeClick(null,ownerNode);
       expect(component.selectedId()).toBe('owner-id');
     });
 
     it('should update selectedId when a different node is clicked', () => {
-      component.onNodeClick(ownerNode);
-      component.onNodeClick(blobContributorNode);
+      component.onNodeClick(null,ownerNode);
+      component.onNodeClick(null,blobContributorNode);
       expect(component.selectedId()).toBe('blob-contributor-id');
     });
 
     it('should set aria-selected="true" on the selected node', () => {
-      component.onNodeClick(ownerNode);
+      component.onNodeClick(null,ownerNode);
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
@@ -262,7 +262,7 @@ describe('HierarchyTreeComponent', () => {
 
     it('should have group role on expanded node children', () => {
       // Groups only appear after a node is expanded
-      component.onNodeClick(ownerNode);
+      component.onNodeClick(null,ownerNode);
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
