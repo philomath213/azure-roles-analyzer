@@ -145,8 +145,7 @@
 }
 
 .view-controls app-role-search {
-  flex: 1;
-  min-width: 200px;
+  flex: 1 1 100%;
 }
 
 .search-results-count {

@@ -51,9 +51,9 @@ export class App implements OnInit {
   /** Current view mode */
   protected readonly viewMode = signal<ViewMode>('list');
 
-  /** Role hierarchy computed from roles */
+  /** Role hierarchy computed from filtered roles */
   protected readonly hierarchy = computed(() => {
-    return this.hierarchyBuilder.buildHierarchy(this.roles());
+    return this.hierarchyBuilder.buildHierarchy(this.filteredRoles());
   });
 
   ngOnInit(): void {

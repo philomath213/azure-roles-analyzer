@@ -51,11 +51,9 @@
               Hierarchy
             </button>
           </div>
-          @if (viewMode() === 'list') {
-            <app-role-search />
-          }
+          <app-role-search />
         </div>
-        @if (viewMode() === 'list' && hasSearchQuery()) {
+        @if (hasSearchQuery()) {
           <div class="search-results-count" aria-live="polite">
             <span>{{ filteredRoles().length }} of {{ roleCount() }} roles</span>
           </div>
