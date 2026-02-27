@@ -28,7 +28,7 @@ export class SearchService {
 
   private matchesSearch(role: RoleDefinition, query: string): boolean {
     const nameMatch = role.name.toLowerCase().includes(query);
-    const descriptionMatch = role.description.toLowerCase().includes(query);
+    const descriptionMatch = (role.description ?? '').toLowerCase().includes(query);
 
     return nameMatch || descriptionMatch;
   }

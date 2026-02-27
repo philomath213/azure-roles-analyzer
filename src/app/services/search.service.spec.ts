@@ -172,5 +172,70 @@ describe('SearchService', () => {
       expect(result.length).toBe(1);
       expect(result[0].name).toBe('Owner');
     });
+
+    describe('null description handling', () => {
+      const rolesWithNullDescriptions: RoleDefinition[] = [
+        {
+          id: 'null-1',
+          name: 'Key Vault Administrator',
+          type: 'BuiltInRole',
+          description: null,
+          assignableScopes: ['/'],
+          permissions: [{ actions: ['*'], notActions: [], dataActions: [], notDataActions: [] }],
+        },
+        {
+          id: 'null-2',
+          name: 'Storage Blob Reader',
+          type: 'BuiltInRole',
+          description: null,
+          assignableScopes: ['/'],
+          permissions: [{ actions: ['*/read'], notActions: [], dataActions: [], notDataActions: [] }],
+        },
+      ];
+
+      it('should not throw when description is null', () => {
+        service.setSearchQuery('vault');
+        expect(() => service.filterRoles(rolesWithNullDescriptions)).not.toThrow();
+      });
+
+      it('should match by name when description is null', () => {
+        service.setSearchQuery('vault');
+        const result = service.filterRoles(rolesWithNullDescriptions);
+        expect(result.length).toBe(1);
+        expect(result[0].name).toBe('Key Vault Administrator');
+      });
+
+      it('should return empty array when query matches only description text and all descriptions are null', () => {
+        service.setSearchQuery('read-only access');
+        const result = service.filterRoles(rolesWithNullDescriptions);
+        expect(result.length).toBe(0);
+      });
+
+      it('should return all roles with null descriptions when query is empty', () => {
+        const result = service.filterRoles(rolesWithNullDescriptions);
+        expect(result.length).toBe(2);
+      });
+
+      it('should handle mixed null and non-null descriptions', () => {
+        const mixed: RoleDefinition[] = [
+          ...rolesWithNullDescriptions,
+          {
+            id: 'with-desc',
+            name: 'Reader',
+            type: 'BuiltInRole',
+            description: 'Read-only access',
+            assignableScopes: ['/'],
+            permissions: [{ actions: ['*/read'], notActions: [], dataActions: [], notDataActions: [] }],
+          },
+        ];
+
+        service.setSearchQuery('read');
+        const result = service.filterRoles(mixed);
+        // 'Storage Blob Reader' matches by name, 'Reader' matches by both name and description
+        expect(result.length).toBe(2);
+        expect(result.map((r) => r.name)).toContain('Storage Blob Reader');
+        expect(result.map((r) => r.name)).toContain('Reader');
+      });
+    });
   });
 });
