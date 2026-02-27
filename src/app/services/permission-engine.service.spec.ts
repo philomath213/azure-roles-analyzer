@@ -76,7 +76,7 @@ describe('PermissionEngineService', () => {
     });
   });
 
-  describe('computeEffectivePermissions', () => {
+  describe('getEffective', () => {
     it('should compute effective permissions for Owner role', () => {
       const ownerRole = createRole('owner', [
         {
@@ -87,13 +87,11 @@ describe('PermissionEngineService', () => {
         },
       ]);
 
-      const effective = service.computeEffectivePermissions(ownerRole);
+      const effective = service.getEffective(ownerRole);
 
-      expect(effective.controlPlane.allowed).toContain('*');
-      expect(effective.controlPlane.hasWildcard).toBe(true);
-      expect(effective.controlPlane.denied).toEqual([]);
-      expect(effective.dataPlane.allowed).toContain('*');
-      expect(effective.dataPlane.hasWildcard).toBe(true);
+      expect(effective.actions).toContain('*');
+      expect(effective.notActions).toEqual([]);
+      expect(effective.dataActions).toContain('*');
     });
 
     it('should compute effective permissions for Contributor role', () => {
@@ -110,11 +108,11 @@ describe('PermissionEngineService', () => {
         },
       ]);
 
-      const effective = service.computeEffectivePermissions(contributorRole);
+      const effective = service.getEffective(contributorRole);
 
-      expect(effective.controlPlane.allowed).toContain('*');
-      expect(effective.controlPlane.denied).toContain('Microsoft.Authorization/*/Delete');
-      expect(effective.controlPlane.denied).toContain('Microsoft.Authorization/*/Write');
+      expect(effective.actions).toContain('*');
+      expect(effective.notActions).toContain('Microsoft.Authorization/*/Delete');
+      expect(effective.notActions).toContain('Microsoft.Authorization/*/Write');
     });
 
     it('should compute effective permissions for Reader role', () => {
@@ -127,11 +125,10 @@ describe('PermissionEngineService', () => {
         },
       ]);
 
-      const effective = service.computeEffectivePermissions(readerRole);
+      const effective = service.getEffective(readerRole);
 
-      expect(effective.controlPlane.allowed).toContain('*/read');
-      expect(effective.controlPlane.hasWildcard).toBe(false);
-      expect(effective.dataPlane.allowed).toEqual([]);
+      expect(effective.actions).toContain('*/read');
+      expect(effective.dataActions).toEqual([]);
     });
 
     it('should handle roles with only data actions', () => {
@@ -144,10 +141,10 @@ describe('PermissionEngineService', () => {
         },
       ]);
 
-      const effective = service.computeEffectivePermissions(dataRole);
+      const effective = service.getEffective(dataRole);
 
-      expect(effective.controlPlane.allowed).toEqual([]);
-      expect(effective.dataPlane.allowed).toContain(
+      expect(effective.actions).toEqual([]);
+      expect(effective.dataActions).toContain(
         'Microsoft.Storage/storageAccounts/blobServices/containers/blobs/read'
       );
     });
@@ -162,8 +159,8 @@ describe('PermissionEngineService', () => {
         },
       ]);
 
-      const first = service.computeEffectivePermissions(role);
-      const second = service.computeEffectivePermissions(role);
+      const first = service.getEffective(role);
+      const second = service.getEffective(role);
 
       expect(first).toBe(second); // Same reference (cached)
     });
@@ -178,10 +175,10 @@ describe('PermissionEngineService', () => {
         },
       ]);
 
-      const effective = service.computeEffectivePermissions(role);
+      const effective = service.getEffective(role);
 
-      expect(effective.controlPlane.allowed).not.toContain('Microsoft.Compute/*');
-      expect(effective.controlPlane.allowed).toContain('Microsoft.Storage/*');
+      expect(effective.actions).not.toContain('Microsoft.Compute/*');
+      expect(effective.actions).toContain('Microsoft.Storage/*');
     });
   });
 
@@ -379,9 +376,9 @@ describe('PermissionEngineService', () => {
         },
       ]);
 
-      const first = service.computeEffectivePermissions(role);
+      const first = service.getEffective(role);
       service.clearCache();
-      const second = service.computeEffectivePermissions(role);
+      const second = service.getEffective(role);
 
       expect(first).not.toBe(second); // Different references after cache clear
       expect(first).toEqual(second); // But same values
@@ -392,10 +389,10 @@ describe('PermissionEngineService', () => {
     it('should handle empty permissions array', () => {
       const role = createRole('empty', []);
 
-      const effective = service.computeEffectivePermissions(role);
+      const effective = service.getEffective(role);
 
-      expect(effective.controlPlane.allowed).toEqual([]);
-      expect(effective.dataPlane.allowed).toEqual([]);
+      expect(effective.actions).toEqual([]);
+      expect(effective.dataActions).toEqual([]);
     });
 
     it('should handle role with empty permission block', () => {
@@ -408,10 +405,10 @@ describe('PermissionEngineService', () => {
         },
       ]);
 
-      const effective = service.computeEffectivePermissions(role);
+      const effective = service.getEffective(role);
 
-      expect(effective.controlPlane.allowed).toEqual([]);
-      expect(effective.dataPlane.allowed).toEqual([]);
+      expect(effective.actions).toEqual([]);
+      expect(effective.dataActions).toEqual([]);
     });
 
     it('should handle complex Azure role patterns', () => {
@@ -430,10 +427,9 @@ describe('PermissionEngineService', () => {
         },
       ]);
 
-      const effective = service.computeEffectivePermissions(vmContributor);
+      const effective = service.getEffective(vmContributor);
 
-      expect(effective.controlPlane.allowed.length).toBe(4);
-      expect(effective.controlPlane.hasWildcard).toBe(false);
+      expect(effective.actions.length).toBe(4);
     });
   });
 });

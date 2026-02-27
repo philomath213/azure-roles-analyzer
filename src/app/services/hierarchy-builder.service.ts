@@ -89,21 +89,21 @@ export class HierarchyBuilderService {
    * Checks if roleB's permissions are a subset of (or equal to) roleA's permissions.
    */
   isSubsetOf(child: RoleDefinition, parent: RoleDefinition): boolean {
-    const childEffective = this.permissionEngine.computeEffectivePermissions(child);
-    const parentEffective = this.permissionEngine.computeEffectivePermissions(parent);
+    const childEffective = this.permissionEngine.getEffective(child);
+    const parentEffective = this.permissionEngine.getEffective(parent);
 
     // Check control plane: all child's allowed must be covered by parent's allowed
     const controlPlaneOk = this.isPlaneCovered(
-      childEffective.controlPlane.allowed,
-      parentEffective.controlPlane.allowed,
-      parentEffective.controlPlane.denied
+      childEffective.actions,
+      parentEffective.actions,
+      parentEffective.notActions
     );
 
     // Check data plane: all child's allowed must be covered by parent's allowed
     const dataPlaneOk = this.isPlaneCovered(
-      childEffective.dataPlane.allowed,
-      parentEffective.dataPlane.allowed,
-      parentEffective.dataPlane.denied
+      childEffective.dataActions,
+      parentEffective.dataActions,
+      parentEffective.notDataActions
     );
 
     return controlPlaneOk && dataPlaneOk;

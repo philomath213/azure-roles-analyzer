@@ -1,32 +1,20 @@
 import { Injectable } from '@angular/core';
-import type { RoleDefinition, EffectivePermissions, Permission } from '../models';
+import type { RoleDefinition, Permission } from '../models';
 import { matchesPattern, matchesAnyPattern } from '../utils/permission-matcher';
-
-export interface PermissionPlane {
-  allowed: string[];
-  denied: string[];
-  hasWildcard: boolean;
-}
-
-export interface MergedPermissions {
-  actions: string[];
-  notActions: string[];
-  dataActions: string[];
-  notDataActions: string[];
-}
 
 @Injectable({ providedIn: 'root' })
 export class PermissionEngineService {
-  private readonly cache = new Map<string, EffectivePermissions>();
+  private readonly cache = new Map<string, Permission>();
 
   /**
-   * Computes effective permissions for a role.
-   * Effective permissions = Actions - NotActions (for control plane)
-   * and DataActions - NotDataActions (for data plane).
+   * Returns the effective permissions for a role as a Permission object.
+   * - actions/notActions represent the effective control plane
+   * - dataActions/notDataActions represent the effective data plane
+   * Effective means: actions filtered to remove those denied by notActions patterns.
    *
    * Results are cached for performance.
    */
-  computeEffectivePermissions(role: RoleDefinition): EffectivePermissions {
+  getEffective(role: RoleDefinition): Permission {
     const cached = this.cache.get(role.id);
     if (cached) {
       return cached;
@@ -34,14 +22,11 @@ export class PermissionEngineService {
 
     const merged = this.mergePermissionBlocks(role.permissions);
 
-    const controlPlane = this.computePlanePermissions(merged.actions, merged.notActions);
-
-    const dataPlane = this.computePlanePermissions(merged.dataActions, merged.notDataActions);
-
-    const result: EffectivePermissions = {
-      roleId: role.id,
-      controlPlane,
-      dataPlane,
+    const result: Permission = {
+      actions: this.filterActions(merged.actions, merged.notActions),
+      notActions: merged.notActions,
+      dataActions: this.filterActions(merged.dataActions, merged.notDataActions),
+      notDataActions: merged.notDataActions,
     };
 
     this.cache.set(role.id, result);
@@ -52,8 +37,8 @@ export class PermissionEngineService {
    * Merges multiple permission blocks into a single unified view.
    * Azure roles can have multiple permission blocks that need to be combined.
    */
-  mergePermissionBlocks(permissions: Permission[]): MergedPermissions {
-    const merged: MergedPermissions = {
+  mergePermissionBlocks(permissions: Permission[]): Permission {
+    const merged: Permission = {
       actions: [],
       notActions: [],
       dataActions: [],
@@ -77,34 +62,68 @@ export class PermissionEngineService {
   }
 
   /**
-   * Computes effective permissions for a single plane (control or data).
-   * Returns allowed actions minus denied actions.
+   * Checks if a permission pattern matches a specific permission string.
    */
-  computePlanePermissions(actions: string[], notActions: string[]): PermissionPlane {
-    const hasWildcard = actions.includes('*');
+  matchesPermission(pattern: string, permission: string): boolean {
+    return matchesPattern(pattern, permission);
+  }
 
-    // For effective permissions, we need to track:
-    // 1. What's explicitly allowed (actions)
-    // 2. What's explicitly denied (notActions)
-    // The effective set is conceptually: actions - notActions
+  /**
+   * Checks if a role grants a specific permission.
+   * Takes into account both Actions and NotActions.
+   */
+  roleGrantsPermission(role: RoleDefinition, permission: string): boolean {
+    const effective = this.getEffective(role);
+    return this.planeGrantsPermission(effective.actions, effective.notActions, permission);
+  }
 
-    // Filter out any actions that are covered by notActions
-    const effectiveAllowed = actions.filter((action) => {
-      // If this action is explicitly denied, remove it
+  /**
+   * Checks if a role grants a specific data action.
+   */
+  roleGrantsDataAction(role: RoleDefinition, dataAction: string): boolean {
+    const effective = this.getEffective(role);
+    return this.planeGrantsPermission(effective.dataActions, effective.notDataActions, dataAction);
+  }
+
+  /**
+   * Gets all permissions a role effectively grants (for analysis).
+   * When given a list of known permissions, expands wildcards and
+   * removes denied permissions.
+   */
+  getEffectivePermissionList(
+    role: RoleDefinition,
+    knownPermissions: string[]
+  ): { controlPlane: string[]; dataPlane: string[] } {
+    const effective = this.getEffective(role);
+
+    const controlPlane = knownPermissions.filter((perm) =>
+      this.planeGrantsPermission(effective.actions, effective.notActions, perm)
+    );
+
+    const dataPlane = knownPermissions.filter((perm) =>
+      this.planeGrantsPermission(effective.dataActions, effective.notDataActions, perm)
+    );
+
+    return { controlPlane, dataPlane };
+  }
+
+  /**
+   * Clears the cache. Useful when roles are reloaded.
+   */
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  /**
+   * Filters actions by removing those denied by notActions patterns.
+   */
+  private filterActions(actions: string[], notActions: string[]): string[] {
+    return actions.filter((action) => {
       if (notActions.includes(action)) {
         return false;
       }
-      // If this action matches any notAction pattern, it's denied
-      // But wildcards in notActions only deny matching wildcards in actions
-      // A specific action in actions is denied if it matches a notAction pattern
       return !this.isActionDenied(action, notActions);
     });
-
-    return {
-      allowed: effectiveAllowed,
-      denied: notActions,
-      hasWildcard,
-    };
   }
 
   /**
@@ -123,70 +142,17 @@ export class PermissionEngineService {
   }
 
   /**
-   * Checks if a permission pattern matches a specific permission string.
+   * Checks if a set of allowed/denied patterns grants a specific permission.
    */
-  matchesPermission(pattern: string, permission: string): boolean {
-    return matchesPattern(pattern, permission);
-  }
-
-  /**
-   * Checks if a role grants a specific permission.
-   * Takes into account both Actions and NotActions.
-   */
-  roleGrantsPermission(role: RoleDefinition, permission: string): boolean {
-    const effective = this.computeEffectivePermissions(role);
-    return this.planeGrantsPermission(effective.controlPlane, permission);
-  }
-
-  /**
-   * Checks if a role grants a specific data action.
-   */
-  roleGrantsDataAction(role: RoleDefinition, dataAction: string): boolean {
-    const effective = this.computeEffectivePermissions(role);
-    return this.planeGrantsPermission(effective.dataPlane, dataAction);
-  }
-
-  /**
-   * Checks if a permission plane grants a specific permission.
-   */
-  private planeGrantsPermission(plane: PermissionPlane, permission: string): boolean {
+  private planeGrantsPermission(allowed: string[], denied: string[], permission: string): boolean {
     // First check if any allowed pattern matches
-    const isAllowed = matchesAnyPattern(plane.allowed, permission);
+    const isAllowed = matchesAnyPattern(allowed, permission);
     if (!isAllowed) {
       return false;
     }
 
     // Then check if it's explicitly denied
-    const isDenied = matchesAnyPattern(plane.denied, permission);
+    const isDenied = matchesAnyPattern(denied, permission);
     return !isDenied;
-  }
-
-  /**
-   * Gets all permissions a role effectively grants (for analysis).
-   * When given a list of known permissions, expands wildcards and
-   * removes denied permissions.
-   */
-  getEffectivePermissionList(
-    role: RoleDefinition,
-    knownPermissions: string[]
-  ): { controlPlane: string[]; dataPlane: string[] } {
-    const effective = this.computeEffectivePermissions(role);
-
-    const controlPlane = knownPermissions.filter((perm) =>
-      this.planeGrantsPermission(effective.controlPlane, perm)
-    );
-
-    const dataPlane = knownPermissions.filter((perm) =>
-      this.planeGrantsPermission(effective.dataPlane, perm)
-    );
-
-    return { controlPlane, dataPlane };
-  }
-
-  /**
-   * Clears the cache. Useful when roles are reloaded.
-   */
-  clearCache(): void {
-    this.cache.clear();
   }
 }
