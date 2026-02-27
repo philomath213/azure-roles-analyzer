@@ -3,7 +3,6 @@ import {
   ChangeDetectionStrategy,
   input,
   output,
-  computed,
   signal,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
@@ -29,9 +28,6 @@ export class HierarchyTreeComponent {
 
   /** The currently selected role ID. */
   readonly selectedId = signal<string | null>(null);
-
-  /** Total number of roles across the full hierarchy (not just visible). */
-  readonly totalCount = computed(() => this.countNodes(this.roots()));
 
   /** True when the given node is expanded. */
   protected isExpanded(id: string): boolean {
@@ -68,11 +64,4 @@ export class HierarchyTreeComponent {
     }
   }
 
-  private countNodes(nodes: HierarchyNode[]): number {
-    let count = nodes.length;
-    for (const node of nodes) {
-      count += this.countNodes(node.children);
-    }
-    return count;
-  }
 }

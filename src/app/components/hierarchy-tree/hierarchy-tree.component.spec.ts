@@ -70,11 +70,6 @@ describe('HierarchyTreeComponent', () => {
       expect(compiled.querySelector('h2')?.textContent).toBe('Role Hierarchy');
     });
 
-    it('should display total role count', () => {
-      const compiled = fixture.nativeElement as HTMLElement;
-      expect(compiled.querySelector('.tree-info')?.textContent).toContain('6 roles');
-    });
-
     it('should render tree container', () => {
       const compiled = fixture.nativeElement as HTMLElement;
       expect(compiled.querySelector('[role="tree"]')).toBeTruthy();
@@ -226,25 +221,6 @@ describe('HierarchyTreeComponent', () => {
         el.querySelector('.node-name')?.textContent?.includes('Owner')
       );
       expect(ownerItem?.getAttribute('aria-selected')).toBe('true');
-    });
-  });
-
-  describe('totalCount', () => {
-    it('should count all nodes including nested', () => {
-      expect(component.totalCount()).toBe(6);
-    });
-
-    it('should return 0 for empty roots', () => {
-      fixture.componentRef.setInput('roots', []);
-      fixture.detectChanges();
-      expect(component.totalCount()).toBe(0);
-    });
-
-    it('should count single root correctly', () => {
-      fixture.componentRef.setInput('roots', [ownerNode]);
-      fixture.detectChanges();
-      // Owner + Contributor + Reader + Custom Role = 4
-      expect(component.totalCount()).toBe(4);
     });
   });
 

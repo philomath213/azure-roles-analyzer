@@ -53,11 +53,13 @@
           </div>
           <app-role-search />
         </div>
-        @if (hasSearchQuery()) {
-          <div class="search-results-count" aria-live="polite">
+        <div class="search-results-count" aria-live="polite">
+          @if (hasSearchQuery()) {
             <span>{{ filteredRoles().length }} of {{ roleCount() }} roles</span>
-          </div>
-        }
+          } @else {
+            <span>{{ roleCount() }} roles</span>
+          }
+        </div>
         @if (viewMode() === 'list') {
           <app-role-list
             [roles]="filteredRoles()"
