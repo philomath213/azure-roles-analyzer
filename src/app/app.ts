@@ -5,18 +5,20 @@ import type { TabId } from './services';
 import type { RoleDefinition } from './models';
 import {
   HierarchyTreeComponent,
+  PermissionSearchComponent,
   RoleDetailsComponent,
   RoleListComponent,
   RoleSearchComponent,
 } from './components';
 
-export type ViewMode = 'list' | 'tree';
+export type ViewMode = 'list' | 'tree' | 'permission';
 
 @Component({
   selector: 'app-root',
   imports: [
     RouterOutlet,
     HierarchyTreeComponent,
+    PermissionSearchComponent,
     RoleDetailsComponent,
     RoleListComponent,
     RoleSearchComponent,

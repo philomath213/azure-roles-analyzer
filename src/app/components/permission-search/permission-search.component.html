@@ -1,0 +1,136 @@
+<section class="permission-search" aria-label="Permission search">
+  <div class="input-area">
+    <label for="perm-input" class="input-label">
+      Permissions to search for
+      <span class="input-hint">One per line — wildcards supported (e.g. <code>Microsoft.Storage/*</code>)</span>
+    </label>
+    <textarea
+      id="perm-input"
+      class="perm-textarea"
+      [value]="textValue()"
+      (input)="onInput($event)"
+      placeholder="Microsoft.Storage/storageAccounts/read&#10;Microsoft.Compute/virtualMachines/start&#10;Microsoft.Network/*"
+      rows="4"
+      autocomplete="off"
+      spellcheck="false"
+      aria-describedby="perm-input-hint"
+    ></textarea>
+
+    <div class="controls-row">
+      <div
+        class="toggle-group"
+        role="group"
+        aria-label="Match mode"
+      >
+        <span class="toggle-label">Mode:</span>
+        <button
+          type="button"
+          [class.active]="mode() === 'AND'"
+          [attr.aria-pressed]="mode() === 'AND'"
+          (click)="setMode('AND')"
+        >AND</button>
+        <button
+          type="button"
+          [class.active]="mode() === 'OR'"
+          [attr.aria-pressed]="mode() === 'OR'"
+          (click)="setMode('OR')"
+        >OR</button>
+      </div>
+
+      <div
+        class="toggle-group"
+        role="group"
+        aria-label="Permission plane"
+      >
+        <span class="toggle-label">Plane:</span>
+        <button
+          type="button"
+          [class.active]="plane() === 'control'"
+          [attr.aria-pressed]="plane() === 'control'"
+          (click)="setPlane('control')"
+        >Control</button>
+        <button
+          type="button"
+          [class.active]="plane() === 'data'"
+          [attr.aria-pressed]="plane() === 'data'"
+          (click)="setPlane('data')"
+        >Data</button>
+        <button
+          type="button"
+          [class.active]="plane() === 'both'"
+          [attr.aria-pressed]="plane() === 'both'"
+          (click)="setPlane('both')"
+        >Both</button>
+      </div>
+    </div>
+  </div>
+
+  @if (hasPermissions()) {
+    <div class="results-area">
+      @if (results().length > 0) {
+        <div class="results-count" aria-live="polite">
+          {{ results().length }} role{{ results().length === 1 ? '' : 's' }} found
+        </div>
+        <ul class="results-list" role="list">
+          @for (result of results(); track result.role.id) {
+            <li
+              class="result-item"
+              [class.selected]="selectedRoleId() === result.role.id"
+              tabindex="0"
+              (click)="onRoleClick(result.role)"
+              (keydown)="onResultKeydown($event, result.role)"
+              [attr.aria-selected]="selectedRoleId() === result.role.id"
+            >
+              <div class="result-info">
+                <span class="result-name">{{ result.role.name }}</span>
+                <span
+                  class="result-type"
+                  [class.built-in]="result.role.type === 'BuiltInRole'"
+                >{{ result.role.type === 'BuiltInRole' ? 'Built-in' : 'Custom' }}</span>
+              </div>
+              <div class="result-metrics">
+                <span
+                  class="metric"
+                  [class.match-full]="result.matchPercent === 100"
+                  [class.match-partial]="result.matchPercent < 100"
+                  [attr.aria-label]="'Match: ' + result.matchPercent + ' percent'"
+                >
+                  Match {{ result.matchPercent }}%
+                </span>
+                <span
+                  class="metric"
+                  [class.overperm-low]="result.overpermissionPercent === 0"
+                  [class.overperm-medium]="result.overpermissionPercent > 0 && result.overpermissionPercent < 50"
+                  [class.overperm-high]="result.overpermissionPercent >= 50"
+                  [attr.aria-label]="'Overpermission: ' + result.overpermissionPercent + ' percent'"
+                >
+                  Overperm {{ result.overpermissionPercent }}%
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="no-results" role="status">
+          <p>No roles found matching the searched permissions.</p>
+          @if (mode() === 'AND') {
+            <p class="no-results-hint">All permissions must be granted. Try
+              <button type="button" class="inline-link" (click)="switchToOrMode()">
+                switching to OR mode
+              </button>
+              to see roles that cover at least one permission.
+            </p>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="empty-state" role="status">
+      <p>Enter permission strings above to find roles that grant them.</p>
+      <p class="empty-hint">
+        Use wildcards like <code>Microsoft.Storage/*</code> to match broad categories,
+        or enter exact permissions like <code>Microsoft.Storage/storageAccounts/read</code>.
+      </p>
+    </div>
+  }
+</section>

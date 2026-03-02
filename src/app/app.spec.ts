@@ -331,7 +331,7 @@ describe('App', () => {
     expect(resultsCount?.textContent).toContain('1 of 2 roles');
   });
 
-  it('should not show search results count when not searching', async () => {
+  it('should show total roles count when not searching', async () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
@@ -343,7 +343,8 @@ describe('App', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     const resultsCount = compiled.querySelector('.search-results-count');
-    expect(resultsCount).toBeFalsy();
+    expect(resultsCount).toBeTruthy();
+    expect(resultsCount?.textContent).toContain('2 roles');
   });
 
   it('should show all roles when search is cleared', async () => {
