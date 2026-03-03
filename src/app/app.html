@@ -1,7 +1,10 @@
 <main class="container">
   <header class="header">
-    <h1>Azure RBAC Role Analyzer</h1>
-    <p>Visualize Azure role hierarchies and identify least-privilege roles</p>
+    <div class="header-title">
+      <h1>Azure RBAC Role Analyzer</h1>
+      <p>Visualize Azure role hierarchies and identify least-privilege roles</p>
+    </div>
+    <app-role-uploader />
   </header>
 
   @if (loading()) {

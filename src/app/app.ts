@@ -9,6 +9,7 @@ import {
   RoleDetailsComponent,
   RoleListComponent,
   RoleSearchComponent,
+  RoleUploaderComponent,
 } from './components';
 
 export type ViewMode = 'list' | 'tree' | 'permission';
@@ -22,6 +23,7 @@ export type ViewMode = 'list' | 'tree' | 'permission';
     RoleDetailsComponent,
     RoleListComponent,
     RoleSearchComponent,
+    RoleUploaderComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',

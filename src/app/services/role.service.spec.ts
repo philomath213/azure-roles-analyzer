@@ -199,4 +199,168 @@ describe('RoleService', () => {
       expect(role).toBeUndefined();
     });
   });
+
+  describe('upload functionality', () => {
+    const uploadedRole: RoleDefinition = {
+      id: 'uploaded-role-1',
+      name: 'My Custom Role',
+      type: 'CustomRole',
+      description: 'Uploaded custom role',
+      assignableScopes: ['/subscriptions/test'],
+      permissions: [{ actions: ['Microsoft.Storage/*'], notActions: [], dataActions: [], notDataActions: [] }],
+    };
+
+    afterEach(() => {
+      localStorage.clear();
+    });
+
+    describe('addUploadedRoles', () => {
+      it('should update uploadedRoles, uploadedRoleCount and hasUploadedRoles signals', () => {
+        service.addUploadedRoles([uploadedRole]);
+
+        expect(service.uploadedRoles().length).toBe(1);
+        expect(service.uploadedRoleCount()).toBe(1);
+        expect(service.hasUploadedRoles()).toBe(true);
+      });
+
+      it('should merge uploaded roles with built-in roles in roles()', () => {
+        service.loadRoles();
+        const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
+        req.flush(mockRoles);
+
+        service.addUploadedRoles([uploadedRole]);
+
+        expect(service.roles().length).toBe(4);
+        expect(service.roles().some((r) => r.id === uploadedRole.id)).toBe(true);
+        expect(service.roles().some((r) => r.name === 'Owner')).toBe(true);
+      });
+
+      it('should not replace built-in roles', () => {
+        service.loadRoles();
+        const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
+        req.flush(mockRoles);
+
+        service.addUploadedRoles([uploadedRole]);
+
+        expect(service.builtInRoles().length).toBe(2);
+      });
+
+      it('should persist uploaded roles to localStorage', () => {
+        service.addUploadedRoles([uploadedRole]);
+
+        const stored = localStorage.getItem('azure-roles-analyzer.uploaded-roles');
+        expect(stored).not.toBeNull();
+        const parsed = JSON.parse(stored!) as RoleDefinition[];
+        expect(parsed.length).toBe(1);
+        expect(parsed[0].id).toBe(uploadedRole.id);
+      });
+
+      it('should replace previous upload on re-upload', () => {
+        service.addUploadedRoles([uploadedRole]);
+
+        const newRole: RoleDefinition = { ...uploadedRole, id: 'uploaded-role-2', name: 'Second Role' };
+        service.addUploadedRoles([newRole]);
+
+        expect(service.uploadedRoles().length).toBe(1);
+        expect(service.uploadedRoles()[0].id).toBe('uploaded-role-2');
+      });
+
+      it('should throw when data is not an array', () => {
+        expect(() => service.addUploadedRoles({ id: 'x', name: 'x' })).toThrow(
+          'JSON must be an array of role definitions.'
+        );
+      });
+
+      it('should throw when array is empty', () => {
+        expect(() => service.addUploadedRoles([])).toThrow('no role definitions');
+      });
+
+      it('should throw when an entry is missing id', () => {
+        expect(() =>
+          service.addUploadedRoles([{ name: 'No ID', permissions: [] }])
+        ).toThrow('missing a valid "id"');
+      });
+
+      it('should throw when an entry is missing name', () => {
+        expect(() =>
+          service.addUploadedRoles([{ id: 'x', permissions: [] }])
+        ).toThrow('missing a valid "name"');
+      });
+
+      it('should throw when an entry is missing permissions array', () => {
+        expect(() =>
+          service.addUploadedRoles([{ id: 'x', name: 'x', permissions: 'bad' }])
+        ).toThrow('missing a "permissions" array');
+      });
+    });
+
+    describe('clearUploadedRoles', () => {
+      it('should clear uploaded roles signal', () => {
+        service.addUploadedRoles([uploadedRole]);
+        service.clearUploadedRoles();
+
+        expect(service.uploadedRoles()).toEqual([]);
+        expect(service.uploadedRoleCount()).toBe(0);
+        expect(service.hasUploadedRoles()).toBe(false);
+      });
+
+      it('should remove item from localStorage', () => {
+        service.addUploadedRoles([uploadedRole]);
+        service.clearUploadedRoles();
+
+        expect(localStorage.getItem('azure-roles-analyzer.uploaded-roles')).toBeNull();
+      });
+    });
+
+    describe('localStorage persistence on construction', () => {
+      it('should load uploaded roles from localStorage when service is created', () => {
+        localStorage.setItem(
+          'azure-roles-analyzer.uploaded-roles',
+          JSON.stringify([uploadedRole])
+        );
+
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [provideHttpClient(), provideHttpClientTesting(), RoleService],
+        });
+        const freshService = TestBed.inject(RoleService);
+        httpMock = TestBed.inject(HttpTestingController);
+
+        expect(freshService.uploadedRoles().length).toBe(1);
+        expect(freshService.uploadedRoles()[0].id).toBe(uploadedRole.id);
+      });
+
+      it('should silently clear corrupt localStorage data', () => {
+        localStorage.setItem('azure-roles-analyzer.uploaded-roles', 'not valid json{{');
+
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [provideHttpClient(), provideHttpClientTesting(), RoleService],
+        });
+        const freshService = TestBed.inject(RoleService);
+        httpMock = TestBed.inject(HttpTestingController);
+
+        expect(freshService.uploadedRoles()).toEqual([]);
+        expect(localStorage.getItem('azure-roles-analyzer.uploaded-roles')).toBeNull();
+      });
+    });
+
+    describe('getRoleById / getRoleByName with uploaded roles', () => {
+      beforeEach(() => {
+        service.addUploadedRoles([uploadedRole]);
+      });
+
+      it('should find an uploaded role by id', () => {
+        const role = service.getRoleById('uploaded-role-1');
+        expect(role).toBeDefined();
+        expect(role?.name).toBe('My Custom Role');
+      });
+
+      it('should find an uploaded role by name', () => {
+        const role = service.getRoleByName('My Custom Role');
+        expect(role).toBeDefined();
+        expect(role?.id).toBe('uploaded-role-1');
+      });
+    });
+  });
 });
