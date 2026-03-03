@@ -65,7 +65,7 @@ describe('App', () => {
     fixture.detectChanges();
     const app = fixture.componentInstance;
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     expect(app).toBeTruthy();
@@ -75,7 +75,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -89,7 +89,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -107,7 +107,7 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.loading')).toBeTruthy();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
   });
 
@@ -115,7 +115,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -130,7 +130,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -148,7 +148,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -166,7 +166,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -188,7 +188,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -206,7 +206,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -225,7 +225,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -239,7 +239,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -260,7 +260,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -284,7 +284,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -298,7 +298,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -316,7 +316,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -335,7 +335,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
@@ -351,7 +351,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
     req.flush(mockRoles);
 
     await fixture.whenStable();
