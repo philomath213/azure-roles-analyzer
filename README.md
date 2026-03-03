@@ -1,59 +1,79 @@
-# AzureRolesAnalyzer
+# Azure RBAC Role Analyzer
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.2.
+A browser-based tool for exploring and analyzing Azure built-in and custom RBAC roles. Visualize role hierarchies, search by name, and find least-privilege roles by the permissions they grant.
 
-## Development server
+**Live demo:** <https://philomath213.github.io/azure-roles-analyzer/>
 
-To start a local development server, run:
+---
 
-```bash
-ng serve
+## Features
+
+### Three view modes
+
+| Mode                  | Description                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------- |
+| **List**              | Flat, searchable list of all roles                                                      |
+| **Hierarchy**         | Tree showing parent -> child role relationships based on permission containment         |
+| **Permission Search** | Inverse search - enter permissions (wildcards supported) and find roles that grant them |
+
+### Role details panel
+
+Click any role to open a side panel with four tabs:
+
+- **Overview** - description, type, and assignable scopes
+- **Permissions** - control-plane actions / notActions
+- **Data Actions** - data-plane actions / notDataActions
+- **JSON** - raw role definition
+
+### Permission Search scoring
+
+Each result shows:
+
+- **Match %** - share of your searched permissions covered by the role (wildcards in role actions handled correctly)
+- **Overpermission %** - share of the role's declared actions that exceed what you searched for
+- AND / OR match mode toggle
+- Control Plane / Data Plane / Both plane selector
+
+---
+
+## Project structure
+
+```text
+src/app/
+├── app.ts / app.html / app.css   # Root component - layout, view switching, stats
+├── components/
+│   ├── hierarchy-tree/           # ARIA tree view of role hierarchy
+│   ├── permission-search/        # Permission-based role search with scoring
+│   ├── role-details/             # Tabbed role details panel
+│   ├── role-list/                # Flat list view
+│   └── role-search/              # Name/description search input
+├── services/
+│   ├── role.service.ts           # Loads and stores role data (signals)
+│   ├── app-state.service.ts      # Selected role and active tab state
+│   ├── search.service.ts         # Name/description search query state
+│   ├── permission-search.service.ts  # Permission search state and scoring
+│   ├── permission-engine.service.ts  # Wildcard permission matching logic
+│   └── hierarchy-builder.service.ts  # Builds parent→child role hierarchy
+├── models/                       # TypeScript interfaces
+└── utils/                        # Permission matching and validation utilities
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## Tech stack
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- **Angular 21** - standalone components, signals, OnPush change detection, native control flow
+- **TypeScript 5.9** - strict mode
+- **Vitest** - unit tests (338 tests)
+- **GitHub Actions** - CI pipeline (test → build → deploy)
+- **GitHub Pages** - hosting
 
-```bash
-ng generate component component-name
-```
+---
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## CI / CD
 
-```bash
-ng generate --help
-```
+Every push and pull request to `main` runs:
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+1. **Test** - `npm test`
+2. **Build** - `npm run build:gh-pages`
+3. **Deploy** (main branch pushes only) - deploys to GitHub Pages via `actions/deploy-pages`
