@@ -83,7 +83,7 @@ describe('RoleService', () => {
     it('should load roles from JSON file', () => {
       service.loadRoles();
 
-      const req = httpMock.expectOne('/assets/data/roles-data.json');
+      const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
       expect(req.request.method).toBe('GET');
       req.flush(mockRoles);
 
@@ -97,7 +97,7 @@ describe('RoleService', () => {
       service.loadRoles();
       expect(service.loading()).toBe(true);
 
-      const req = httpMock.expectOne('/assets/data/roles-data.json');
+      const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
       req.flush(mockRoles);
 
       expect(service.loading()).toBe(false);
@@ -106,7 +106,7 @@ describe('RoleService', () => {
     it('should handle errors gracefully', () => {
       service.loadRoles();
 
-      const req = httpMock.expectOne('/assets/data/roles-data.json');
+      const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
       req.error(new ProgressEvent('error'), { status: 404, statusText: 'Not Found' });
 
       expect(service.roles()).toEqual([]);
@@ -132,7 +132,7 @@ describe('RoleService', () => {
 
       service.loadRoles();
 
-      const req = httpMock.expectOne('/assets/data/roles-data.json');
+      const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
       req.flush(incompleteRoles);
 
       const loadedRole = service.roles()[0];
@@ -145,7 +145,7 @@ describe('RoleService', () => {
   describe('computed signals', () => {
     beforeEach(() => {
       service.loadRoles();
-      const req = httpMock.expectOne('/assets/data/roles-data.json');
+      const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
       req.flush(mockRoles);
     });
 
@@ -163,7 +163,7 @@ describe('RoleService', () => {
   describe('getRoleById', () => {
     beforeEach(() => {
       service.loadRoles();
-      const req = httpMock.expectOne('/assets/data/roles-data.json');
+      const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
       req.flush(mockRoles);
     });
 
@@ -184,7 +184,7 @@ describe('RoleService', () => {
   describe('getRoleByName', () => {
     beforeEach(() => {
       service.loadRoles();
-      const req = httpMock.expectOne('/assets/data/roles-data.json');
+      const req = httpMock.expectOne('/assets/data/AzureBuiltinRoles.json');
       req.flush(mockRoles);
     });
 

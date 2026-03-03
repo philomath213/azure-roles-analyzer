@@ -25,7 +25,7 @@ export class RoleService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
-    this.http.get<RoleDefinition[]>('/assets/data/roles-data.json').subscribe({
+    this.http.get<RoleDefinition[]>('/assets/data/AzureBuiltinRoles.json').subscribe({
       next: (roles) => {
         this.rolesSignal.set(this.normalizeRoles(roles));
         this.loadingSignal.set(false);
