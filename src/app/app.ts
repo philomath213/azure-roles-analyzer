@@ -55,7 +55,10 @@ export class App implements OnInit {
   /** Current view mode */
   protected readonly viewMode = signal<ViewMode>('list');
 
-  /** Role hierarchy computed from filtered roles */
+  /** True for one tick after switching to tree view — lets the spinner paint before the O(n²) computation runs. */
+  protected readonly hierarchyLoading = signal(false);
+
+  /** Role hierarchy computed from filtered roles (lazy — only evaluated when the template reads it). */
   protected readonly hierarchy = computed(() => {
     return this.hierarchyBuilder.buildHierarchy(this.filteredRoles());
   });
@@ -77,6 +80,15 @@ export class App implements OnInit {
   }
 
   setViewMode(mode: ViewMode): void {
-    this.viewMode.set(mode);
+    if (mode === 'tree' && this.viewMode() !== 'tree') {
+      this.hierarchyLoading.set(true);
+      this.viewMode.set(mode);
+      // Defer the O(n²) hierarchy computation by one tick so Angular can paint the spinner first.
+      // The computed() is lazy and won't run until the template reads hierarchy().roots,
+      // which only happens after hierarchyLoading becomes false.
+      setTimeout(() => this.hierarchyLoading.set(false), 0);
+    } else {
+      this.viewMode.set(mode);
+    }
   }
 }

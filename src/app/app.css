@@ -86,6 +86,37 @@
   margin-top: 0.25rem;
 }
 
+/* Hierarchy loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e0e0e0;
+  border-top-color: #0078d4;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+.view-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 0.75rem;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.view-loading p {
+  margin: 0;
+}
+
 /* Two-panel layout */
 .main-content {
   display: grid;

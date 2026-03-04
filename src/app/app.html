@@ -83,10 +83,17 @@
             (roleSelect)="onRoleSelect($event)"
           />
         } @else if (viewMode() === 'tree') {
-          <app-hierarchy-tree
-            [roots]="hierarchy().roots"
-            (roleSelect)="onRoleSelect($event)"
-          />
+          @if (hierarchyLoading()) {
+            <div class="view-loading" role="status" aria-live="polite">
+              <div class="spinner" aria-hidden="true"></div>
+              <p>Building hierarchy&hellip;</p>
+            </div>
+          } @else {
+            <app-hierarchy-tree
+              [roots]="hierarchy().roots"
+              (roleSelect)="onRoleSelect($event)"
+            />
+          }
         } @else {
           <app-permission-search
             [roles]="roles()"
