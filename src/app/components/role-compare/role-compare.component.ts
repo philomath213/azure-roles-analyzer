@@ -256,9 +256,17 @@ export class RoleCompareComponent {
   }
 
   protected scrollTo(anchorId: string): void {
-    this.host.nativeElement
-      .querySelector(`#${anchorId}`)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Scroll only the diff-body container — scrollIntoView() would also scroll
+    // ancestor containers (e.g. the list-panel), hiding the view controls above.
+    const host = this.host.nativeElement as HTMLElement;
+    const container = host.querySelector('.diff-body') as HTMLElement | null;
+    const target = host.querySelector(`#${anchorId}`) as HTMLElement | null;
+    if (!container || !target) return;
+    const top =
+      target.getBoundingClientRect().top -
+      container.getBoundingClientRect().top +
+      container.scrollTop;
+    container.scrollTo({ top, behavior: 'smooth' });
   }
 
   // --- Display helpers ---
