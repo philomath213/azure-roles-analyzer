@@ -41,6 +41,7 @@ export class App implements OnInit {
   protected readonly roleCount = this.roleService.roleCount;
   protected readonly builtInCount = this.roleService.builtInRoles;
   protected readonly customCount = this.roleService.customRoles;
+  protected readonly hasUploadedRoles = this.roleService.hasUploadedRoles;
   protected readonly loading = this.roleService.loading;
   protected readonly error = this.roleService.error;
 
@@ -83,12 +84,8 @@ export class App implements OnInit {
     }
   }
 
-  clearCompareA(): void {
-    this.appState.clearCompareRoleA();
-  }
-
-  clearCompareB(): void {
-    this.appState.clearCompareRoleB();
+  onClearUploads(): void {
+    this.roleService.clearUploadedRoles();
   }
 
   onTabChange(tab: TabId): void {

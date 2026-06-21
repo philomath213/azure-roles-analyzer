@@ -10,8 +10,6 @@ import { RoleService } from '../../services';
 export class RoleUploaderComponent {
   private readonly roleService = inject(RoleService);
 
-  protected readonly uploadedCount = this.roleService.uploadedRoleCount;
-  protected readonly hasUploaded = this.roleService.hasUploadedRoles;
   protected readonly uploadError = signal<string | null>(null);
 
   onFileChange(event: Event): void {
@@ -34,10 +32,5 @@ export class RoleUploaderComponent {
     };
     reader.onerror = () => this.uploadError.set('Failed to read the file.');
     reader.readAsText(file);
-  }
-
-  onClear(): void {
-    this.roleService.clearUploadedRoles();
-    this.uploadError.set(null);
   }
 }

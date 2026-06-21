@@ -9,7 +9,17 @@
       <div class="stats-inline" aria-label="Role statistics">
         <span class="stat-pill"><span class="stat-value">{{ roleCount() }}</span> total</span>
         <span class="stat-pill"><strong>{{ builtInCount().length }}</strong> built-in</span>
-        <span class="stat-pill"><strong>{{ customCount().length }}</strong> custom</span>
+        <span class="stat-pill">
+          <strong>{{ customCount().length }}</strong> custom
+          @if (hasUploadedRoles()) {
+            <button
+              type="button"
+              class="stat-clear"
+              aria-label="Clear uploaded custom roles"
+              (click)="onClearUploads()"
+            >&#x2715;</button>
+          }
+        </span>
       </div>
     }
 
@@ -68,33 +78,6 @@
           </div>
           @if (viewMode() !== 'permission' && viewMode() !== 'compare') {
             <app-role-search />
-          }
-          @if (compareRoleA() || compareRoleB()) {
-            <div class="compare-queue" aria-label="Comparison queue">
-              <span class="queue-label">Compare:</span>
-              @if (compareRoleA()) {
-                <span class="queue-pill queue-a">
-                  A: {{ compareRoleA()!.name }}
-                  <button
-                    type="button"
-                    class="queue-clear"
-                    aria-label="Remove Role A from comparison"
-                    (click)="clearCompareA()"
-                  >&#x2715;</button>
-                </span>
-              }
-              @if (compareRoleB()) {
-                <span class="queue-pill queue-b">
-                  B: {{ compareRoleB()!.name }}
-                  <button
-                    type="button"
-                    class="queue-clear"
-                    aria-label="Remove Role B from comparison"
-                    (click)="clearCompareB()"
-                  >&#x2715;</button>
-                </span>
-              }
-            </div>
           }
         </div>
         @if (viewMode() !== 'permission' && viewMode() !== 'compare') {

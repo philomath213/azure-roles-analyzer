@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { App } from './app';
-import { AppStateService, SearchService } from './services';
+import { AppStateService, SearchService, RoleService } from './services';
 import type { RoleDefinition } from './models';
 
 describe('App', () => {
@@ -366,5 +366,41 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const roleItems = compiled.querySelectorAll('.role-item');
     expect(roleItems.length).toBe(2);
+  });
+
+  it('should clear uploaded roles via the custom stat chip clear button', async () => {
+    localStorage.clear();
+    const roleService = TestBed.inject(RoleService);
+    roleService.addUploadedRoles([
+      {
+        id: 'uploaded-1',
+        name: 'Custom One',
+        type: 'CustomRole',
+        description: null,
+        assignableScopes: ['/'],
+        permissions: [{ actions: ['*'], notActions: [], dataActions: [], notDataActions: [] }],
+      },
+    ]);
+
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const req = httpMock.expectOne('assets/data/AzureBuiltinRoles.json');
+    req.flush(mockRoles);
+
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const clearBtn = compiled.querySelector('.stat-clear') as HTMLButtonElement;
+    expect(clearBtn).toBeTruthy();
+    expect(clearBtn.getAttribute('aria-label')).toContain('Clear uploaded custom roles');
+
+    clearBtn.click();
+    fixture.detectChanges();
+
+    expect(roleService.hasUploadedRoles()).toBe(false);
+    expect(compiled.querySelector('.stat-clear')).toBeFalsy();
+    localStorage.clear();
   });
 });
