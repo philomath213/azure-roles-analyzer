@@ -1,9 +1,18 @@
 <main class="container">
-  <header class="header">
-    <div class="header-title">
+  <header class="topbar">
+    <div class="brand">
       <h1>Azure RBAC Role Analyzer</h1>
-      <p>Visualize Azure role hierarchies and identify least-privilege roles</p>
+      <p class="tagline">Visualize role hierarchies and find least-privilege roles</p>
     </div>
+
+    @if (!loading() && !error()) {
+      <div class="stats-inline" aria-label="Role statistics">
+        <span class="stat-pill"><span class="stat-value">{{ roleCount() }}</span> total</span>
+        <span class="stat-pill"><strong>{{ builtInCount().length }}</strong> built-in</span>
+        <span class="stat-pill"><strong>{{ customCount().length }}</strong> custom</span>
+      </div>
+    }
+
     <app-role-uploader />
   </header>
 
@@ -16,21 +25,6 @@
       <p>{{ error() }}</p>
     </div>
   } @else {
-    <section class="stats" aria-label="Role statistics">
-      <div class="stat-card">
-        <span class="stat-value">{{ roleCount() }}</span>
-        <span class="stat-label">Total Roles</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ builtInCount().length }}</span>
-        <span class="stat-label">Built-in Roles</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-value">{{ customCount().length }}</span>
-        <span class="stat-label">Custom Roles</span>
-      </div>
-    </section>
-
     <div class="main-content" [class.has-details]="hasSelectedRole()">
       <div class="list-panel">
         <div class="view-controls">
