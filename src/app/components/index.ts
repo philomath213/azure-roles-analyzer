@@ -4,3 +4,4 @@ export { RoleListComponent } from './role-list/role-list.component';
 export { RoleSearchComponent } from './role-search/role-search.component';
 export { PermissionSearchComponent } from './permission-search/permission-search.component';
 export { RoleUploaderComponent } from './role-uploader/role-uploader.component';
+export { RoleCompareComponent } from './role-compare/role-compare.component';

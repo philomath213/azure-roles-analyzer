@@ -278,4 +278,59 @@ describe('RoleListComponent', () => {
       expect(component.isSelected(mockRoles[1])).toBe(false);
     });
   });
+
+  describe('compare button', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('roles', mockRoles);
+      fixture.detectChanges();
+    });
+
+    it('should render a compare button for each role', () => {
+      const buttons = fixture.nativeElement.querySelectorAll('.compare-btn');
+      expect(buttons.length).toBe(3);
+    });
+
+    it('should show ⇔ symbol by default when no compare slot set', () => {
+      const btn = fixture.nativeElement.querySelector('.compare-btn') as HTMLElement;
+      expect(btn.textContent?.trim()).toBe('⇔');
+    });
+
+    it('should show "A" and have compare-slot-a class when compareRoleAId matches', () => {
+      fixture.componentRef.setInput('compareRoleAId', 'role-1');
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelectorAll('.compare-btn')[0] as HTMLElement;
+      expect(btn.textContent?.trim()).toBe('A');
+      expect(btn.classList).toContain('compare-slot-a');
+    });
+
+    it('should show "B" and have compare-slot-b class when compareRoleBId matches', () => {
+      fixture.componentRef.setInput('compareRoleBId', 'role-2');
+      fixture.detectChanges();
+      const btn = fixture.nativeElement.querySelectorAll('.compare-btn')[1] as HTMLElement;
+      expect(btn.textContent?.trim()).toBe('B');
+      expect(btn.classList).toContain('compare-slot-b');
+    });
+
+    it('should emit roleAddToCompare and NOT emit roleSelect when compare button is clicked', () => {
+      const selectSpy = vi.fn();
+      const compareSpy = vi.fn();
+      const selectSub = component.roleSelect.subscribe(selectSpy);
+      const compareSub = component.roleAddToCompare.subscribe(compareSpy);
+
+      const btn = fixture.nativeElement.querySelectorAll('.compare-btn')[0] as HTMLButtonElement;
+      btn.click();
+      fixture.detectChanges();
+
+      expect(compareSpy).toHaveBeenCalledWith(mockRoles[0]);
+      expect(selectSpy).not.toHaveBeenCalled();
+
+      selectSub.unsubscribe();
+      compareSub.unsubscribe();
+    });
+
+    it('should have accessible aria-label on compare button', () => {
+      const btn = fixture.nativeElement.querySelector('.compare-btn') as HTMLButtonElement;
+      expect(btn.getAttribute('aria-label')).toContain('Owner');
+    });
+  });
 });

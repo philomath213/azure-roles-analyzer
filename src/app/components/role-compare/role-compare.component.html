@@ -1,0 +1,302 @@
+<div class="compare-root">
+  <!-- Pickers -->
+  <div class="pickers">
+    <!-- Role A Picker -->
+    <div class="picker" aria-label="Role A picker">
+      <h2 class="picker-title">Role A</h2>
+
+      @if (roleA(); as selected) {
+        <div class="selected-card">
+          <div class="selected-info">
+            <span class="selected-name">{{ selected.name }}</span>
+            <span class="selected-badge" [class.built-in]="selected.type === 'BuiltInRole'">
+              {{ selected.type === 'BuiltInRole' ? 'Built-in' : 'Custom' }}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="clear-btn"
+            aria-label="Clear Role A selection"
+            (click)="clearRoleA()"
+          >
+            &#x2715;
+          </button>
+        </div>
+      } @else {
+        <div class="picker-search">
+          <input
+            type="search"
+            class="search-input"
+            placeholder="Search roles&hellip;"
+            aria-label="Search for Role A"
+            [value]="searchA()"
+            (input)="onSearchA($event)"
+            autocomplete="off"
+          />
+          <ul class="results-list" role="listbox" aria-label="Role A search results">
+            @for (role of filteredA(); track role.id) {
+              <li
+                class="result-item"
+                role="option"
+                tabindex="0"
+                [attr.aria-selected]="false"
+                (click)="selectRoleA(role)"
+                (keydown.enter)="selectRoleA(role)"
+                (keydown.space)="selectRoleA(role)"
+              >
+                <span class="r-name">{{ role.name }}</span>
+                <span class="r-badge" [class.built-in]="role.type === 'BuiltInRole'">
+                  {{ role.type === 'BuiltInRole' ? 'Built-in' : 'Custom' }}
+                </span>
+              </li>
+            } @empty {
+              <li class="empty-item" role="option" aria-disabled="true">No roles found</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+
+    <!-- Role B Picker -->
+    <div class="picker" aria-label="Role B picker">
+      <h2 class="picker-title">Role B</h2>
+
+      @if (roleB(); as selected) {
+        <div class="selected-card">
+          <div class="selected-info">
+            <span class="selected-name">{{ selected.name }}</span>
+            <span class="selected-badge" [class.built-in]="selected.type === 'BuiltInRole'">
+              {{ selected.type === 'BuiltInRole' ? 'Built-in' : 'Custom' }}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="clear-btn"
+            aria-label="Clear Role B selection"
+            (click)="clearRoleB()"
+          >
+            &#x2715;
+          </button>
+        </div>
+      } @else {
+        <div class="picker-search">
+          <input
+            type="search"
+            class="search-input"
+            placeholder="Search roles&hellip;"
+            aria-label="Search for Role B"
+            [value]="searchB()"
+            (input)="onSearchB($event)"
+            autocomplete="off"
+          />
+          <ul class="results-list" role="listbox" aria-label="Role B search results">
+            @for (role of filteredB(); track role.id) {
+              <li
+                class="result-item"
+                role="option"
+                tabindex="0"
+                [attr.aria-selected]="false"
+                (click)="selectRoleB(role)"
+                (keydown.enter)="selectRoleB(role)"
+                (keydown.space)="selectRoleB(role)"
+              >
+                <span class="r-name">{{ role.name }}</span>
+                <span class="r-badge" [class.built-in]="role.type === 'BuiltInRole'">
+                  {{ role.type === 'BuiltInRole' ? 'Built-in' : 'Custom' }}
+                </span>
+              </li>
+            } @empty {
+              <li class="empty-item" role="option" aria-disabled="true">No roles found</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Prompt when not both selected -->
+  @if (!comparison()) {
+    <div class="compare-prompt" role="status">
+      <p>Select a role in each picker above to compare them.</p>
+    </div>
+  }
+
+  <!-- Comparison result -->
+  @if (comparison(); as cmp) {
+    <section class="comparison-result" aria-label="Comparison result">
+      <div class="relationship-row">
+        <span class="rel-badge" [class]="'rel-' + cmp.relationship">
+          {{ relationshipLabel(cmp.relationship, cmp.roleA.name, cmp.roleB.name) }}
+        </span>
+      </div>
+
+      <!-- Control Plane Actions -->
+      @if (hasDiffContent(cmp.controlPlane)) {
+        <div class="diff-section">
+          <h3 class="diff-section-title">Control Plane Actions</h3>
+          <div class="diff-columns">
+            <div class="diff-col diff-col-a">
+              <h4>Only in A <span class="count">({{ cmp.controlPlane.onlyInA.length }})</span></h4>
+              <ul>
+                @for (p of cmp.controlPlane.onlyInA; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+            <div class="diff-col diff-col-shared">
+              <h4>In Both <span class="count">({{ cmp.controlPlane.shared.length }})</span></h4>
+              <ul>
+                @for (p of cmp.controlPlane.shared; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+            <div class="diff-col diff-col-b">
+              <h4>Only in B <span class="count">({{ cmp.controlPlane.onlyInB.length }})</span></h4>
+              <ul>
+                @for (p of cmp.controlPlane.onlyInB; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Control Plane NotActions -->
+      @if (hasDiffContent(cmp.controlPlaneNot)) {
+        <div class="diff-section">
+          <h3 class="diff-section-title">Control Plane NotActions</h3>
+          <div class="diff-columns">
+            <div class="diff-col diff-col-a">
+              <h4>Only in A <span class="count">({{ cmp.controlPlaneNot.onlyInA.length }})</span></h4>
+              <ul>
+                @for (p of cmp.controlPlaneNot.onlyInA; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+            <div class="diff-col diff-col-shared">
+              <h4>In Both <span class="count">({{ cmp.controlPlaneNot.shared.length }})</span></h4>
+              <ul>
+                @for (p of cmp.controlPlaneNot.shared; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+            <div class="diff-col diff-col-b">
+              <h4>Only in B <span class="count">({{ cmp.controlPlaneNot.onlyInB.length }})</span></h4>
+              <ul>
+                @for (p of cmp.controlPlaneNot.onlyInB; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Data Plane Actions -->
+      @if (hasDiffContent(cmp.dataPlane)) {
+        <div class="diff-section">
+          <h3 class="diff-section-title">Data Plane Actions</h3>
+          <div class="diff-columns">
+            <div class="diff-col diff-col-a">
+              <h4>Only in A <span class="count">({{ cmp.dataPlane.onlyInA.length }})</span></h4>
+              <ul>
+                @for (p of cmp.dataPlane.onlyInA; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+            <div class="diff-col diff-col-shared">
+              <h4>In Both <span class="count">({{ cmp.dataPlane.shared.length }})</span></h4>
+              <ul>
+                @for (p of cmp.dataPlane.shared; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+            <div class="diff-col diff-col-b">
+              <h4>Only in B <span class="count">({{ cmp.dataPlane.onlyInB.length }})</span></h4>
+              <ul>
+                @for (p of cmp.dataPlane.onlyInB; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Data Plane NotDataActions -->
+      @if (hasDiffContent(cmp.dataPlaneNot)) {
+        <div class="diff-section">
+          <h3 class="diff-section-title">Data Plane NotDataActions</h3>
+          <div class="diff-columns">
+            <div class="diff-col diff-col-a">
+              <h4>Only in A <span class="count">({{ cmp.dataPlaneNot.onlyInA.length }})</span></h4>
+              <ul>
+                @for (p of cmp.dataPlaneNot.onlyInA; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+            <div class="diff-col diff-col-shared">
+              <h4>In Both <span class="count">({{ cmp.dataPlaneNot.shared.length }})</span></h4>
+              <ul>
+                @for (p of cmp.dataPlaneNot.shared; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+            <div class="diff-col diff-col-b">
+              <h4>Only in B <span class="count">({{ cmp.dataPlaneNot.onlyInB.length }})</span></h4>
+              <ul>
+                @for (p of cmp.dataPlaneNot.onlyInB; track p) {
+                  <li>{{ p }}</li>
+                } @empty {
+                  <li class="none">&mdash;</li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Empty state when all diff sections are empty -->
+      @if (
+        !hasDiffContent(cmp.controlPlane) &&
+        !hasDiffContent(cmp.controlPlaneNot) &&
+        !hasDiffContent(cmp.dataPlane) &&
+        !hasDiffContent(cmp.dataPlaneNot)
+      ) {
+        <div class="no-permissions" role="status">
+          <p>Neither role has any permissions defined.</p>
+        </div>
+      }
+    </section>
+  }
+</div>

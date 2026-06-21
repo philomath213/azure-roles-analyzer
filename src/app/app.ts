@@ -6,13 +6,14 @@ import type { RoleDefinition } from './models';
 import {
   HierarchyTreeComponent,
   PermissionSearchComponent,
+  RoleCompareComponent,
   RoleDetailsComponent,
   RoleListComponent,
   RoleSearchComponent,
   RoleUploaderComponent,
 } from './components';
 
-export type ViewMode = 'list' | 'tree' | 'permission';
+export type ViewMode = 'list' | 'tree' | 'permission' | 'compare';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ export type ViewMode = 'list' | 'tree' | 'permission';
     RouterOutlet,
     HierarchyTreeComponent,
     PermissionSearchComponent,
+    RoleCompareComponent,
     RoleDetailsComponent,
     RoleListComponent,
     RoleSearchComponent,
@@ -45,6 +47,8 @@ export class App implements OnInit {
   protected readonly selectedRole = this.appState.selectedRole;
   protected readonly activeTab = this.appState.activeTab;
   protected readonly hasSelectedRole = this.appState.hasSelectedRole;
+  protected readonly compareRoleA = this.appState.compareRoleA;
+  protected readonly compareRoleB = this.appState.compareRoleB;
 
   protected readonly filteredRoles = computed(() => {
     return this.searchService.filterRoles(this.roles());
@@ -69,6 +73,22 @@ export class App implements OnInit {
 
   onRoleSelect(role: RoleDefinition): void {
     this.appState.selectRole(role);
+  }
+
+  onRoleAddToCompare(role: RoleDefinition): void {
+    const hadRoleB = this.appState.compareRoleB() !== null;
+    this.appState.addToComparison(role);
+    if (!hadRoleB && this.appState.compareRoleB() !== null) {
+      this.setViewMode('compare');
+    }
+  }
+
+  clearCompareA(): void {
+    this.appState.clearCompareRoleA();
+  }
+
+  clearCompareB(): void {
+    this.appState.clearCompareRoleB();
   }
 
   onTabChange(tab: TabId): void {

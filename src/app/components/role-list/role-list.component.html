@@ -17,6 +17,18 @@
           <span class="role-type-badge" [class.built-in]="role.type === 'BuiltInRole'">
             {{ role.type === 'BuiltInRole' ? 'Built-in' : 'Custom' }}
           </span>
+          <button
+            type="button"
+            class="compare-btn"
+            [class.compare-slot-a]="compareSlot(role) === 'a'"
+            [class.compare-slot-b]="compareSlot(role) === 'b'"
+            [attr.aria-label]="compareSlot(role) === 'a' ? role.name + ' is Role A in comparison'
+                              : compareSlot(role) === 'b' ? role.name + ' is Role B in comparison'
+                              : 'Add ' + role.name + ' to comparison'"
+            (click)="onCompareClick(role, $event)"
+            (keydown.enter)="onCompareClick(role, $event)"
+            (keydown.space)="onCompareClick(role, $event)"
+          >@if (compareSlot(role) === 'a') {A} @else if (compareSlot(role) === 'b') {B} @else {&#x21D4;}</button>
         </div>
         <p class="role-description">{{ role.description }}</p>
       </li>

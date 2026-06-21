@@ -120,4 +120,85 @@ describe('AppStateService', () => {
       expect(service.hasSelectedRole()).toBe(false);
     });
   });
+
+  describe('compare queue', () => {
+    const roleB: RoleDefinition = {
+      id: 'role-b',
+      name: 'Role B',
+      type: 'BuiltInRole',
+      description: null,
+      assignableScopes: ['/'],
+      permissions: [{ actions: ['*/read'], notActions: [], dataActions: [], notDataActions: [] }],
+    };
+
+    const roleC: RoleDefinition = {
+      id: 'role-c',
+      name: 'Role C',
+      type: 'CustomRole',
+      description: null,
+      assignableScopes: ['/'],
+      permissions: [{ actions: ['Microsoft.Storage/*'], notActions: [], dataActions: [], notDataActions: [] }],
+    };
+
+    it('should start with no compare roles', () => {
+      expect(service.compareRoleA()).toBeNull();
+      expect(service.compareRoleB()).toBeNull();
+    });
+
+    it('addToComparison with empty queue sets Role A', () => {
+      service.addToComparison(mockRole);
+      expect(service.compareRoleA()).toEqual(mockRole);
+      expect(service.compareRoleB()).toBeNull();
+    });
+
+    it('addToComparison with only A set fills Role B', () => {
+      service.addToComparison(mockRole);
+      service.addToComparison(roleB);
+      expect(service.compareRoleA()).toEqual(mockRole);
+      expect(service.compareRoleB()).toEqual(roleB);
+    });
+
+    it('addToComparison with both set rotates: old-B → A, new → B', () => {
+      service.addToComparison(mockRole);
+      service.addToComparison(roleB);
+      service.addToComparison(roleC);
+      expect(service.compareRoleA()).toEqual(roleB);
+      expect(service.compareRoleB()).toEqual(roleC);
+    });
+
+    it('clearCompareRoleA clears only Role A', () => {
+      service.addToComparison(mockRole);
+      service.addToComparison(roleB);
+      service.clearCompareRoleA();
+      expect(service.compareRoleA()).toBeNull();
+      expect(service.compareRoleB()).toEqual(roleB);
+    });
+
+    it('clearCompareRoleB clears only Role B', () => {
+      service.addToComparison(mockRole);
+      service.addToComparison(roleB);
+      service.clearCompareRoleB();
+      expect(service.compareRoleA()).toEqual(mockRole);
+      expect(service.compareRoleB()).toBeNull();
+    });
+
+    it('setCompareRoleA overrides Role A directly', () => {
+      service.addToComparison(mockRole);
+      service.setCompareRoleA(roleB);
+      expect(service.compareRoleA()).toEqual(roleB);
+    });
+
+    it('setCompareRoleB overrides Role B directly', () => {
+      service.addToComparison(mockRole);
+      service.addToComparison(roleB);
+      service.setCompareRoleB(roleC);
+      expect(service.compareRoleB()).toEqual(roleC);
+    });
+
+    it('setCompareRoleA with null clears Role A', () => {
+      service.addToComparison(mockRole);
+      service.setCompareRoleA(null);
+      expect(service.compareRoleA()).toBeNull();
+    });
+  });
 });

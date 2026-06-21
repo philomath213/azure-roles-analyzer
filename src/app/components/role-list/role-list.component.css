@@ -60,6 +60,48 @@
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.compare-btn {
+  margin-left: auto;
+  border: 1px solid #ccc;
+  background: transparent;
+  border-radius: 4px;
+  padding: 0.125rem 0.4rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: #666;
+  line-height: 1.4;
+  flex-shrink: 0;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.compare-btn:hover {
+  border-color: #0078d4;
+  color: #0078d4;
+}
+
+.compare-btn:focus-visible {
+  outline: 2px solid #0078d4;
+  outline-offset: 1px;
+}
+
+.compare-btn.compare-slot-a {
+  border-color: #0078d4;
+  background: #e6f2fb;
+  color: #0078d4;
+  font-weight: 600;
+}
+
+.compare-btn.compare-slot-b {
+  border-color: #d83b01;
+  background: #fdf0ea;
+  color: #d83b01;
+  font-weight: 600;
 }
 
 .role-name {

@@ -56,12 +56,48 @@
             >
               Permission Search
             </button>
+            <button
+              type="button"
+              role="tab"
+              [class.active]="viewMode() === 'compare'"
+              [attr.aria-selected]="viewMode() === 'compare'"
+              (click)="setViewMode('compare')"
+            >
+              Compare
+            </button>
           </div>
-          @if (viewMode() !== 'permission') {
+          @if (viewMode() !== 'permission' && viewMode() !== 'compare') {
             <app-role-search />
           }
+          @if (compareRoleA() || compareRoleB()) {
+            <div class="compare-queue" aria-label="Comparison queue">
+              <span class="queue-label">Compare:</span>
+              @if (compareRoleA()) {
+                <span class="queue-pill queue-a">
+                  A: {{ compareRoleA()!.name }}
+                  <button
+                    type="button"
+                    class="queue-clear"
+                    aria-label="Remove Role A from comparison"
+                    (click)="clearCompareA()"
+                  >&#x2715;</button>
+                </span>
+              }
+              @if (compareRoleB()) {
+                <span class="queue-pill queue-b">
+                  B: {{ compareRoleB()!.name }}
+                  <button
+                    type="button"
+                    class="queue-clear"
+                    aria-label="Remove Role B from comparison"
+                    (click)="clearCompareB()"
+                  >&#x2715;</button>
+                </span>
+              }
+            </div>
+          }
         </div>
-        @if (viewMode() !== 'permission') {
+        @if (viewMode() !== 'permission' && viewMode() !== 'compare') {
           <div class="search-results-count" aria-live="polite">
             @if (hasSearchQuery()) {
               <span>{{ filteredRoles().length }} of {{ roleCount() }} roles</span>
@@ -74,7 +110,10 @@
           <app-role-list
             [roles]="filteredRoles()"
             [selectedRoleId]="selectedRole()?.id ?? null"
+            [compareRoleAId]="compareRoleA()?.id ?? null"
+            [compareRoleBId]="compareRoleB()?.id ?? null"
             (roleSelect)="onRoleSelect($event)"
+            (roleAddToCompare)="onRoleAddToCompare($event)"
           />
         } @else if (viewMode() === 'tree') {
           @if (hierarchyLoading()) {
@@ -88,12 +127,14 @@
               (roleSelect)="onRoleSelect($event)"
             />
           }
-        } @else {
+        } @else if (viewMode() === 'permission') {
           <app-permission-search
             [roles]="roles()"
             [selectedRoleId]="selectedRole()?.id ?? null"
             (roleSelect)="onRoleSelect($event)"
           />
+        } @else {
+          <app-role-compare />
         }
       </div>
 
