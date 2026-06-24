@@ -14,12 +14,18 @@ updates:
           - "@angular/*"
           - "@angular-eslint/*"
           - "angular-eslint"
+          - "eslint"
+          - "typescript"
+          - "typescript-eslint"
       dev-dependencies:
         dependency-type: "development"
         exclude-patterns:
           - "@angular/*"
           - "@angular-eslint/*"
           - "angular-eslint"
+          - "eslint"
+          - "typescript"
+          - "typescript-eslint"
 
   - package-ecosystem: "github-actions"
     directory: "/"
