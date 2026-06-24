@@ -16,6 +16,10 @@ updates:
           - "angular-eslint"
       dev-dependencies:
         dependency-type: "development"
+        exclude-patterns:
+          - "@angular/*"
+          - "@angular-eslint/*"
+          - "angular-eslint"
 
   - package-ecosystem: "github-actions"
     directory: "/"
